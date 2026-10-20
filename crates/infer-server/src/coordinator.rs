@@ -957,13 +957,15 @@ fn strip_stop_strings(text: &str, stop: &[String]) -> String {
 fn finalize_chat_content(
     decoded: String,
     tools_active: bool,
+    booleans: &chat::BooleanArguments,
     thinking: bool,
 ) -> (String, Vec<ResponseToolCall>, bool) {
     if !tools_active {
         return (decoded, Vec::new(), thinking);
     }
     let (_reasoning, content) = crate::schema::split_reasoning(&decoded, thinking);
-    let (content, calls) = chat::openai_parse_tool_calls(&content);
+    let (content, mut calls) = chat::openai_parse_tool_calls(&content);
+    booleans.coerce_all(&mut calls);
     let tool_calls = calls
         .iter()
         .enumerate()
@@ -1339,6 +1341,7 @@ async fn chat_completions(
     // tool-less request stays byte-identical on the wire.
     let tools_active = request.wants_tools();
     let tools: &[chat::OpenAiToolDefinition] = if tools_active { &request.tools } else { &[] };
+    let booleans = chat::BooleanArguments::from_tools(tools);
     let reasoning_effort = request
         .chat_template_kwargs
         .as_ref()
@@ -1417,7 +1420,7 @@ async fn chat_completions(
             }
             let decoded = decode(&state, &delta.token_ids)?;
             let (content, tool_calls, split_thinking) =
-                finalize_chat_content(decoded, tools_active, thinking);
+                finalize_chat_content(decoded, tools_active, &booleans, thinking);
             let reasoning_tokens =
                 count_reasoning_tokens(&delta.token_ids, state.think_token_ids, thinking);
             return Ok(Json(ChatCompletionResponse::from_parts(
@@ -1474,7 +1477,7 @@ async fn chat_completions(
             let mut reasoning_count = 0usize;
             let mut in_thinking = thinking;
             // Converged reasoning-then-tools pipeline (shared with /v1/messages).
-            let mut pipeline = StreamPipeline::new(thinking, tools_active);
+            let mut pipeline = StreamPipeline::new(thinking, tools_active, booleans);
             let mut completed_calls: Vec<chat::ToolCall> = Vec::new();
             // OpenAI convention: the first emitted chunk's delta carries `role`.
             let mut role_sent = false;
@@ -1671,7 +1674,7 @@ async fn chat_completions(
                 |stop| strip_stop_strings(&decoded, stop),
             );
             let (content, tool_calls, split_thinking) =
-                finalize_chat_content(decoded, tools_active, thinking);
+                finalize_chat_content(decoded, tools_active, &booleans, thinking);
             let (reasoning_content, content) = split_reasoning(&content, split_thinking);
             let finish_reason = if tool_calls.is_empty() {
                 finish_reason(outcome.finish.as_ref()).to_string()
@@ -1735,7 +1738,7 @@ async fn chat_completions(
         |stop| strip_stop_strings(&decoded, stop),
     );
     let (content, tool_calls, split_thinking) =
-        finalize_chat_content(decoded, tools_active, thinking);
+        finalize_chat_content(decoded, tools_active, &booleans, thinking);
     let logprobs_value = if request.logprobs.unwrap_or(false) {
         Some(chat_logprobs_value(
             &state,
@@ -1842,6 +1845,11 @@ async fn anthropic_messages(
         .map_err(|err| MessagesError::invalid_request(err.to_string()))?;
     request.validate()?;
     let (chat_request, thinking, tools_active, prompt_tokens) = anthropic_prompt(&state, &request)?;
+    let booleans = chat::BooleanArguments::from_tools(if tools_active {
+        &chat_request.tools
+    } else {
+        &[]
+    });
     let mut sampling = chat_request.sampling_params();
     // Convert string `stop` sequences to token ids (engine only supports
     // token-id stops). Try as-is and with leading space/newline.
@@ -1892,7 +1900,7 @@ async fn anthropic_messages(
             }
             // Anthropic pipeline: reasoning is emitted as `thinking` blocks even
             // in tools mode (unlike OpenAI which drops it).
-            let mut pipeline = StreamPipeline::new(thinking, tools_active);
+            let mut pipeline = StreamPipeline::new(thinking, tools_active, booleans);
             let mut saw_tool_use = false;
             let mut output_tokens = 0usize;
             let mut gen_ids: Vec<u32> = Vec::new();
@@ -2014,11 +2022,12 @@ async fn anthropic_messages(
     // precede text/tool_use blocks). Parse tool calls only when tools are
     // active (the prompt advertised them), then hand the result to
     // `from_parts` so it splits reasoning into `reasoning_content`.
-    let (content, calls) = if tools_active {
+    let (content, mut calls) = if tools_active {
         chat::openai_parse_tool_calls(&decoded)
     } else {
         (decoded.clone(), Vec::new())
     };
+    booleans.coerce_all(&mut calls);
     let tool_calls: Vec<ResponseToolCall> = calls
         .iter()
         .enumerate()
@@ -2151,4 +2160,33 @@ async fn dashboard_page() -> ([(header::HeaderName, &'static str); 1], &'static 
         [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
         include_str!("dashboard.html"),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn non_stream_tool_call_boolean_follows_the_request_schema() {
+        let tools = vec![chat::OpenAiToolDefinition {
+            tool_type: "function".into(),
+            function: chat::OpenAiFunctionDefinition {
+                name: "echo_args".into(),
+                description: None,
+                parameters: Some(json!({"type": "object", "properties": {
+                    "count": {"type": "integer"},
+                    "flag": {"type": "boolean"},
+                }})),
+            },
+        }];
+        let decoded = "<tool_call>\n<function=echo_args>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n</function>\n</tool_call>";
+
+        let booleans = chat::BooleanArguments::from_tools(&tools);
+        let (_, calls, _) = finalize_chat_content(decoded.to_string(), true, &booleans, false);
+        assert_eq!(calls.len(), 1);
+        let arguments: serde_json::Value =
+            serde_json::from_str(&calls[0].function.arguments).unwrap();
+        assert_eq!(arguments, json!({"count": 17, "flag": true}));
+    }
 }

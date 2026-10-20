@@ -380,3 +380,194 @@ pub fn openai_parse_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
     } = parse_tool_calls(text);
     (content, tool_calls)
 }
+
+/// The parameters a request's tool schemas declare `boolean`, by tool name.
+///
+/// Qwen's native tool-call XML spells every scalar the way Jinja's `string`
+/// filter does (its chat template renders arguments with `| string`), so a
+/// boolean is written `True` / `False`. That is not JSON:
+/// [`parse_tool_calls`] types the text from its own shape alone (it has no
+/// tool schema) and leaves `True` as the string `"True"`, while `17` and
+/// `true` become a number and a boolean. This type carries the schema's
+/// answer to the one place that can give it: a string argument of a
+/// parameter declared `boolean` whose text is `true` / `false` in any case
+/// becomes a JSON boolean. Nothing else is retyped, so a parameter declared
+/// `string` that holds the text `True` stays a string.
+#[derive(Debug, Clone, Default)]
+pub struct BooleanArguments {
+    by_tool: std::collections::HashMap<String, Vec<String>>,
+}
+
+impl BooleanArguments {
+    /// Collect the `boolean` parameters of `tools`. A `type` array counts when
+    /// it lists `boolean` and not `string`; `anyOf` / `oneOf` / `$ref` schemas
+    /// are not read.
+    pub fn from_tools(tools: &[OpenAiToolDefinition]) -> Self {
+        let mut by_tool = std::collections::HashMap::<String, Vec<String>>::new();
+        for tool in tools {
+            let Some(properties) = tool
+                .function
+                .parameters
+                .as_ref()
+                .and_then(|parameters| parameters.get("properties"))
+                .and_then(Value::as_object)
+            else {
+                continue;
+            };
+            let names = properties
+                .iter()
+                .filter(|(_, schema)| declares_boolean(schema))
+                .map(|(name, _)| name.clone());
+            let mut names = names.peekable();
+            if names.peek().is_some() {
+                by_tool
+                    .entry(tool.function.name.clone())
+                    .or_default()
+                    .extend(names);
+            }
+        }
+        Self { by_tool }
+    }
+
+    /// Type the boolean parameters of one parsed call.
+    pub fn coerce(&self, call: &mut ToolCall) {
+        let Some(names) = self.by_tool.get(&call.name) else {
+            return;
+        };
+        let Some(arguments) = call.arguments.as_object_mut() else {
+            return;
+        };
+        for name in names {
+            if let Some(value) = arguments.get_mut(name)
+                && let Value::String(text) = value
+                && let Some(boolean) = spelled_boolean(text)
+            {
+                *value = Value::Bool(boolean);
+            }
+        }
+    }
+
+    /// Type the boolean parameters of every parsed call.
+    pub fn coerce_all(&self, calls: &mut [ToolCall]) {
+        for call in calls {
+            self.coerce(call);
+        }
+    }
+}
+
+fn declares_boolean(schema: &Value) -> bool {
+    match schema.get("type") {
+        Some(Value::String(ty)) => ty == "boolean",
+        Some(Value::Array(types)) => {
+            let lists = |name: &str| types.iter().any(|ty| ty.as_str() == Some(name));
+            lists("boolean") && !lists("string")
+        }
+        _ => false,
+    }
+}
+
+fn spelled_boolean(text: &str) -> Option<bool> {
+    let text = text.trim();
+    if text.eq_ignore_ascii_case("true") {
+        Some(true)
+    } else if text.eq_ignore_ascii_case("false") {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tool(name: &str, parameters: Value) -> OpenAiToolDefinition {
+        OpenAiToolDefinition {
+            tool_type: "function".into(),
+            function: OpenAiFunctionDefinition {
+                name: name.into(),
+                description: None,
+                parameters: Some(parameters),
+            },
+        }
+    }
+
+    fn echo_args() -> OpenAiToolDefinition {
+        tool(
+            "echo_args",
+            json!({"type": "object", "properties": {
+                "text": {"type": "string"},
+                "count": {"type": "integer"},
+                "flag": {"type": "boolean"},
+                "maybe": {"type": ["boolean", "null"]},
+                "label": {"type": ["boolean", "string"]},
+            }}),
+        )
+    }
+
+    // The tool block of the Qwen3.5 template, as the model writes it
+    // (quantbench tool_arg `scalars` case; the reference text of the engine run).
+    const QWEN_SCALARS: &str = "<tool_call>\n<function=echo_args>\n<parameter=text>\nhand summer\n</parameter>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n</function>\n</tool_call>";
+
+    #[test]
+    fn declared_boolean_parameters_become_booleans() {
+        let booleans = BooleanArguments::from_tools(&[echo_args()]);
+        let (_, mut calls) = openai_parse_tool_calls(QWEN_SCALARS);
+        booleans.coerce_all(&mut calls);
+        assert_eq!(
+            calls[0].arguments,
+            json!({"text": "hand summer", "count": 17, "flag": true})
+        );
+
+        let mut call = ToolCall::new(
+            "echo_args",
+            json!({"flag": "False", "maybe": " TRUE ", "count": 3}),
+        );
+        booleans.coerce(&mut call);
+        assert_eq!(
+            call.arguments,
+            json!({"flag": false, "maybe": true, "count": 3})
+        );
+    }
+
+    #[test]
+    fn only_declared_boolean_parameters_of_the_called_tool_are_retyped() {
+        let booleans = BooleanArguments::from_tools(&[echo_args()]);
+
+        // `text` is a string: the text `True` is the answer, not a boolean.
+        // `label` lists `string` beside `boolean`: ambiguous, stays text.
+        // Undeclared parameters keep what the parser made of them.
+        let mut call = ToolCall::new(
+            "echo_args",
+            json!({"text": "True", "label": "True", "extra": "True", "flag": "yes"}),
+        );
+        booleans.coerce(&mut call);
+        assert_eq!(
+            call.arguments,
+            json!({"text": "True", "label": "True", "extra": "True", "flag": "yes"})
+        );
+
+        // The same parameter name on another tool is not touched.
+        let mut other = ToolCall::new("other_tool", json!({"flag": "True"}));
+        booleans.coerce(&mut other);
+        assert_eq!(other.arguments, json!({"flag": "True"}));
+    }
+
+    #[test]
+    fn calls_without_an_object_of_arguments_or_a_schema_are_left_alone() {
+        let booleans = BooleanArguments::from_tools(&[
+            echo_args(),
+            tool("no_properties", json!({"type": "object"})),
+        ]);
+        let mut raw = ToolCall::new("echo_args", Value::String("flag=True".into()));
+        booleans.coerce(&mut raw);
+        assert_eq!(raw.arguments, Value::String("flag=True".into()));
+
+        let mut call = ToolCall::new("no_properties", json!({"flag": "True"}));
+        booleans.coerce(&mut call);
+        assert_eq!(call.arguments, json!({"flag": "True"}));
+
+        BooleanArguments::default().coerce(&mut call);
+        assert_eq!(call.arguments, json!({"flag": "True"}));
+    }
+}
