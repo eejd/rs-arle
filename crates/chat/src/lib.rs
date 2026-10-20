@@ -622,4 +622,67 @@ mod tests {
         });
         assert_eq!(coerced(parameters, args.clone()), args);
     }
+
+    #[test]
+    fn all_of_is_read_as_a_union_and_enum_is_not() {
+        let parameters = json!({"type": "object", "properties": {
+            // pydantic v1: a single `$ref` with siblings
+            "v1": {"allOf": [{"$ref": "#/definitions/Flag"}], "default": true},
+            // a constraint-only entry names no type
+            "constrained": {"allOf": [{"type": "boolean"}, {"description": "on or off"}]},
+            // a string entry makes it ambiguous
+            "strict": {"allOf": [{"type": "boolean"}, {"type": "string"}]},
+            // an `allOf` whose entries name no type at all
+            "untyped": {"allOf": [{"description": "x"}]},
+            "listed": {"enum": [true, false]},
+        }, "definitions": {"Flag": {"type": "boolean"}}});
+        let args = json!({
+            "v1": "True", "constrained": "False", "strict": "True", "untyped": "True",
+            "listed": "True",
+        });
+        assert_eq!(
+            coerced(parameters, args),
+            json!({
+                "v1": true, "constrained": false, "strict": "True", "untyped": "True",
+                "listed": "True",
+            })
+        );
+    }
+
+    #[test]
+    fn adversarial_schemas_end_unreadable_within_the_node_limit() {
+        // 400 branches, every one a `$ref` back to the definition itself.
+        let k = 400;
+        let selfref: Vec<Value> = (0..k).map(|_| json!({"$ref": "#/$defs/A"})).collect();
+        // Each level `anyOf`s twice into the next: 2^20 paths if expanded.
+        let mut defs = serde_json::Map::new();
+        for i in 0..20 {
+            let next = json!({"$ref": format!("#/$defs/D{}", i + 1)});
+            defs.insert(format!("D{i}"), json!({"anyOf": [next.clone(), next]}));
+        }
+        defs.insert("D20".into(), json!({"type": "boolean"}));
+        defs.insert("A".into(), json!({"anyOf": selfref}));
+        // 400 plain branches: wider than the limit, so unreadable too.
+        let wide: Vec<Value> = (0..k).map(|_| json!({"type": "boolean"})).collect();
+        let root = json!({"type": "object", "$defs": Value::Object(defs)});
+        for schema in [
+            json!({"$ref": "#/$defs/A"}),
+            json!({"$ref": "#/$defs/D0"}),
+            json!({"anyOf": wide}),
+        ] {
+            let types = protocol::DeclaredTypes::of(&schema, &root);
+            assert!(types.unreadable);
+            assert!(
+                types.nodes <= protocol::SCHEMA_NODE_LIMIT + 1,
+                "{} nodes",
+                types.nodes
+            );
+        }
+        // and a parameter with such a schema is left untyped
+        let args = json!({"a": "True", "d": "True"});
+        let parameters = json!({"type": "object", "properties": {
+            "a": {"$ref": "#/$defs/A"}, "d": {"$ref": "#/$defs/D0"},
+        }, "$defs": root["$defs"].clone()});
+        assert_eq!(coerced(parameters, args.clone()), args);
+    }
 }

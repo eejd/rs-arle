@@ -435,36 +435,59 @@ fn extract_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
 }
 
 /// The scalar types a JSON-schema fragment can accept, read from `type`,
-/// `anyOf` / `oneOf` branches and local `$ref`s (`#/...`, resolved against the
-/// tool's `parameters` object, depth-limited so a cyclic `$ref` terminates).
+/// `anyOf` / `oneOf` / `allOf` and local `$ref`s (`#/...`, resolved against the
+/// tool's `parameters` object).
+///
 /// `null` is ignored: `Optional[bool]` (pydantic: `anyOf: [boolean, null]`) is a
-/// boolean for this purpose.
+/// boolean for this purpose. `allOf` is read as the union of its entries'
+/// types (conservative: a type any entry names counts, so a string entry
+/// makes a parameter ambiguous), and an entry that names no type is a mere
+/// constraint (`maxLength`, `description`, pydantic v1's
+/// `{"allOf": [{"$ref": ...}], "default": ...}`). `enum` / `const` are not read.
+///
+/// The walk is bounded whatever the schema looks like (the schema comes from
+/// the request): at most [`SCHEMA_NODE_LIMIT`] schema nodes are visited, at
+/// most [`SCHEMA_DEPTH_LIMIT`] deep, and it stops at the first unreadable
+/// node, so a self-referential or exponentially branching `$ref` / `anyOf`
+/// ends as `unreadable` instead of being expanded.
 #[derive(Debug, Default)]
 pub(crate) struct DeclaredTypes {
     pub(crate) string: bool,
     pub(crate) boolean: bool,
     /// Any other type (`integer`, `array`, ...).
     pub(crate) other: bool,
-    /// A branch whose type cannot be read: no `type` / `anyOf` / `oneOf` /
-    /// `$ref`, a `$ref` that is not a resolvable local pointer, a non-string
-    /// `type` entry, or nesting past the depth limit. Callers must not type
-    /// a parameter on the strength of a schema with an unreadable branch.
+    /// A node whose type cannot be read: no `type` / `anyOf` / `oneOf` /
+    /// `allOf` / `$ref` (outside an `allOf` entry), a `$ref` that is not a
+    /// resolvable local pointer, a non-string `type` entry, or a walk past the
+    /// depth or node limit. Callers must not type a parameter on the strength
+    /// of a schema with an unreadable node.
     pub(crate) unreadable: bool,
+    /// Schema nodes visited (at most the limit plus the node that crossed it).
+    pub(crate) nodes: u32,
 }
 
 const SCHEMA_DEPTH_LIMIT: u8 = 8;
+pub(crate) const SCHEMA_NODE_LIMIT: u32 = 128;
 
 impl DeclaredTypes {
     pub(crate) fn of(schema: &Value, root: &Value) -> Self {
         let mut types = Self::default();
-        types.collect(schema, root, 0);
+        if !types.collect(schema, root, 0) {
+            types.unreadable = true;
+        }
         types
     }
 
-    fn collect(&mut self, schema: &Value, root: &Value, depth: u8) {
-        if depth >= SCHEMA_DEPTH_LIMIT {
+    /// Whether `schema` named any type (directly or through `anyOf` / `oneOf` /
+    /// `allOf` / `$ref`); the caller decides what an unnamed one means.
+    fn collect(&mut self, schema: &Value, root: &Value, depth: u8) -> bool {
+        if self.unreadable {
+            return true;
+        }
+        self.nodes += 1;
+        if depth >= SCHEMA_DEPTH_LIMIT || self.nodes > SCHEMA_NODE_LIMIT {
             self.unreadable = true;
-            return;
+            return true;
         }
         let mut readable = false;
         match schema.get("type") {
@@ -487,7 +510,20 @@ impl DeclaredTypes {
             if let Some(Value::Array(branches)) = schema.get(key) {
                 readable = true;
                 for branch in branches {
-                    self.collect(branch, root, depth + 1);
+                    if !self.collect(branch, root, depth + 1) {
+                        self.unreadable = true;
+                    }
+                    if self.unreadable {
+                        return true;
+                    }
+                }
+            }
+        }
+        if let Some(Value::Array(entries)) = schema.get("allOf") {
+            for entry in entries {
+                readable |= self.collect(entry, root, depth + 1);
+                if self.unreadable {
+                    return true;
                 }
             }
         }
@@ -498,13 +534,11 @@ impl DeclaredTypes {
                 .and_then(|r| r.strip_prefix('#'))
                 .and_then(|pointer| root.pointer(pointer))
             {
-                Some(target) => self.collect(target, root, depth + 1),
-                None => self.unreadable = true,
+                Some(target) if self.collect(target, root, depth + 1) => {}
+                _ => self.unreadable = true,
             }
         }
-        if !readable {
-            self.unreadable = true;
-        }
+        readable
     }
 
     fn note(&mut self, ty: &str) {
