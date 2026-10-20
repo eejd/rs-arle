@@ -1,0 +1,2194 @@
+[
+ {
+  "label": "patched",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-01",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-01",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-01",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-01",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-02",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-02",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-02",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-02",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-04",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-04",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-04",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-04",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-06",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-06",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-06",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-06",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-07",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-07",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-07",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-07",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-09",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-09",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-09",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-09",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-11",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-11",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-11",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-11",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-12",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-12",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-12",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-12",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-14",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-14",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-14",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-14",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-16",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-16",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-16",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "list-16",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-17",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-17",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-17",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "object-17",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-19",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-19",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-19",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "patched",
+  "case": "code-19",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ }
+]
