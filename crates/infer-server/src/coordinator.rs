@@ -957,15 +957,14 @@ fn strip_stop_strings(text: &str, stop: &[String]) -> String {
 fn finalize_chat_content(
     decoded: String,
     tools_active: bool,
-    booleans: &chat::BooleanArguments,
+    schemas: &chat::ToolSchemas,
     thinking: bool,
 ) -> (String, Vec<ResponseToolCall>, bool) {
     if !tools_active {
         return (decoded, Vec::new(), thinking);
     }
     let (_reasoning, content) = crate::schema::split_reasoning(&decoded, thinking);
-    let (content, mut calls) = chat::openai_parse_tool_calls(&content);
-    booleans.coerce_all(&mut calls);
+    let (content, calls) = chat::openai_parse_tool_calls(&content, schemas);
     let tool_calls = calls
         .iter()
         .enumerate()
@@ -981,14 +980,13 @@ fn finalize_chat_content(
 fn parse_anthropic_tool_calls(
     decoded: &str,
     tools_active: bool,
-    booleans: &chat::BooleanArguments,
+    schemas: &chat::ToolSchemas,
 ) -> (String, Vec<ResponseToolCall>) {
-    let (content, mut calls) = if tools_active {
-        chat::openai_parse_tool_calls(decoded)
+    let (content, calls) = if tools_active {
+        chat::openai_parse_tool_calls(decoded, schemas)
     } else {
         (decoded.to_string(), Vec::new())
     };
-    booleans.coerce_all(&mut calls);
     let tool_calls = calls
         .iter()
         .enumerate()
@@ -1364,7 +1362,7 @@ async fn chat_completions(
     // tool-less request stays byte-identical on the wire.
     let tools_active = request.wants_tools();
     let tools: &[chat::OpenAiToolDefinition] = if tools_active { &request.tools } else { &[] };
-    let booleans = chat::BooleanArguments::from_tools(tools);
+    let schemas = chat::ToolSchemas::from_openai(tools);
     let reasoning_effort = request
         .chat_template_kwargs
         .as_ref()
@@ -1443,7 +1441,7 @@ async fn chat_completions(
             }
             let decoded = decode(&state, &delta.token_ids)?;
             let (content, tool_calls, split_thinking) =
-                finalize_chat_content(decoded, tools_active, &booleans, thinking);
+                finalize_chat_content(decoded, tools_active, &schemas, thinking);
             let reasoning_tokens =
                 count_reasoning_tokens(&delta.token_ids, state.think_token_ids, thinking);
             return Ok(Json(ChatCompletionResponse::from_parts(
@@ -1500,7 +1498,7 @@ async fn chat_completions(
             let mut reasoning_count = 0usize;
             let mut in_thinking = thinking;
             // Converged reasoning-then-tools pipeline (shared with /v1/messages).
-            let mut pipeline = StreamPipeline::new(thinking, tools_active, booleans);
+            let mut pipeline = StreamPipeline::new(thinking, tools_active, schemas);
             let mut completed_calls: Vec<chat::ToolCall> = Vec::new();
             // OpenAI convention: the first emitted chunk's delta carries `role`.
             let mut role_sent = false;
@@ -1697,7 +1695,7 @@ async fn chat_completions(
                 |stop| strip_stop_strings(&decoded, stop),
             );
             let (content, tool_calls, split_thinking) =
-                finalize_chat_content(decoded, tools_active, &booleans, thinking);
+                finalize_chat_content(decoded, tools_active, &schemas, thinking);
             let (reasoning_content, content) = split_reasoning(&content, split_thinking);
             let finish_reason = if tool_calls.is_empty() {
                 finish_reason(outcome.finish.as_ref()).to_string()
@@ -1761,7 +1759,7 @@ async fn chat_completions(
         |stop| strip_stop_strings(&decoded, stop),
     );
     let (content, tool_calls, split_thinking) =
-        finalize_chat_content(decoded, tools_active, &booleans, thinking);
+        finalize_chat_content(decoded, tools_active, &schemas, thinking);
     let logprobs_value = if request.logprobs.unwrap_or(false) {
         Some(chat_logprobs_value(
             &state,
@@ -1868,7 +1866,7 @@ async fn anthropic_messages(
         .map_err(|err| MessagesError::invalid_request(err.to_string()))?;
     request.validate()?;
     let (chat_request, thinking, tools_active, prompt_tokens) = anthropic_prompt(&state, &request)?;
-    let booleans = chat::BooleanArguments::from_tools(if tools_active {
+    let schemas = chat::ToolSchemas::from_openai(if tools_active {
         &chat_request.tools
     } else {
         &[]
@@ -1923,7 +1921,7 @@ async fn anthropic_messages(
             }
             // Anthropic pipeline: reasoning is emitted as `thinking` blocks even
             // in tools mode (unlike OpenAI which drops it).
-            let mut pipeline = StreamPipeline::new(thinking, tools_active, booleans);
+            let mut pipeline = StreamPipeline::new(thinking, tools_active, schemas);
             let mut saw_tool_use = false;
             let mut output_tokens = 0usize;
             let mut gen_ids: Vec<u32> = Vec::new();
@@ -2045,7 +2043,7 @@ async fn anthropic_messages(
     // precede text/tool_use blocks). Parse tool calls only when tools are
     // active (the prompt advertised them), then hand the result to
     // `from_parts` so it splits reasoning into `reasoning_content`.
-    let (content, tool_calls) = parse_anthropic_tool_calls(&decoded, tools_active, &booleans);
+    let (content, tool_calls) = parse_anthropic_tool_calls(&decoded, tools_active, &schemas);
     let reasoning_tokens =
         count_reasoning_tokens(&outcome.generated_tokens, state.think_token_ids, thinking);
     let chat = ChatCompletionResponse::from_parts(
@@ -2181,7 +2179,7 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn non_stream_tool_call_boolean_follows_the_request_schema() {
+    fn non_stream_tool_call_arguments_follow_the_request_schema() {
         let tools = vec![chat::OpenAiToolDefinition {
             tool_type: "function".into(),
             function: chat::OpenAiFunctionDefinition {
@@ -2190,23 +2188,30 @@ mod tests {
                 parameters: Some(json!({"type": "object", "properties": {
                     "count": {"type": "integer"},
                     "flag": {"type": "boolean"},
+                    "zip": {"type": "string"},
                 }})),
             },
         }];
-        let decoded = "<tool_call>\n<function=echo_args>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n</function>\n</tool_call>";
+        let decoded = "<tool_call>\n<function=echo_args>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n<parameter=zip>\n12345\n</parameter>\n</function>\n</tool_call>";
 
-        let booleans = chat::BooleanArguments::from_tools(&tools);
-        let (_, calls, _) = finalize_chat_content(decoded.to_string(), true, &booleans, false);
+        let schemas = chat::ToolSchemas::from_openai(&tools);
+        let (_, calls, _) = finalize_chat_content(decoded.to_string(), true, &schemas, false);
         assert_eq!(calls.len(), 1);
         let arguments: serde_json::Value =
             serde_json::from_str(&calls[0].function.arguments).unwrap();
-        assert_eq!(arguments, json!({"count": 17, "flag": true}));
+        assert_eq!(
+            arguments,
+            json!({"count": 17, "flag": true, "zip": "12345"})
+        );
 
         // The Anthropic non-stream path parses with its own function.
-        let (_, calls) = parse_anthropic_tool_calls(decoded, true, &booleans);
+        let (_, calls) = parse_anthropic_tool_calls(decoded, true, &schemas);
         assert_eq!(calls.len(), 1);
         let arguments: serde_json::Value =
             serde_json::from_str(&calls[0].function.arguments).unwrap();
-        assert_eq!(arguments, json!({"count": 17, "flag": true}));
+        assert_eq!(
+            arguments,
+            json!({"count": 17, "flag": true, "zip": "12345"})
+        );
     }
 }

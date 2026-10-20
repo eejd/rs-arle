@@ -1,8 +1,8 @@
 use super::tool::ToolCall;
 use super::tool::{
-    DSML_TOOL_CALLS_BLOCK, HiddenBlock, THINK_BLOCK, TOOL_CALL_BLOCK, VISIBLE_TAGS, find_first_tag,
-    hidden_block_for_open_tag, longest_tag_prefix_suffix, parse_dsml_tool_calls_block,
-    parse_streaming_tool_call_block,
+    DSML_TOOL_CALLS_BLOCK, HiddenBlock, THINK_BLOCK, TOOL_CALL_BLOCK, ToolSchemas, VISIBLE_TAGS,
+    find_first_tag, hidden_block_for_open_tag, longest_tag_prefix_suffix,
+    parse_dsml_tool_calls_block, parse_streaming_tool_call_block,
 };
 
 #[derive(Default)]
@@ -10,12 +10,14 @@ struct HiddenBlockStream {
     pending: String,
     hidden: Option<HiddenBlock>,
     tool_buf: Option<String>,
+    schemas: ToolSchemas,
 }
 
 impl HiddenBlockStream {
-    fn capture_tools() -> Self {
+    fn capture_tools(schemas: ToolSchemas) -> Self {
         Self {
             tool_buf: Some(String::new()),
+            schemas,
             ..Self::default()
         }
     }
@@ -101,7 +103,8 @@ impl HiddenBlockStream {
         };
         match hidden {
             HiddenBlock::ToolCall => {
-                if let Some(call) = parse_streaming_tool_call_block(tool_buf.trim()) {
+                if let Some(call) = parse_streaming_tool_call_block(tool_buf.trim(), &self.schemas)
+                {
                     calls.push(call);
                 }
             }
@@ -144,16 +147,12 @@ pub struct StreamingToolCalls {
     stream: HiddenBlockStream,
 }
 
-impl Default for StreamingToolCalls {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl StreamingToolCalls {
-    pub fn new() -> Self {
+    /// `schemas` types native `<parameter=...>` values by the declared
+    /// parameter types ([`ToolSchemas`]).
+    pub fn new(schemas: ToolSchemas) -> Self {
         Self {
-            stream: HiddenBlockStream::capture_tools(),
+            stream: HiddenBlockStream::capture_tools(schemas),
         }
     }
 
