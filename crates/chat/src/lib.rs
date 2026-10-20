@@ -399,24 +399,23 @@ pub struct BooleanArguments {
 }
 
 impl BooleanArguments {
-    /// Collect the `boolean` parameters of `tools`. A `type` array counts when
-    /// it lists `boolean` and not `string`; `anyOf` / `oneOf` / `$ref` schemas
-    /// are not read.
+    /// Collect the `boolean` parameters of `tools`: those whose schema, read
+    /// through `type`, `anyOf` / `oneOf` and local `$ref`s, accepts `boolean`
+    /// and not `string` (`null` aside), and has no branch that cannot be read.
+    /// `["boolean", "integer"]` counts; `["boolean", "string"]` is ambiguous
+    /// (the text `True` may be the answer) and does not.
     pub fn from_tools(tools: &[OpenAiToolDefinition]) -> Self {
         let mut by_tool = std::collections::HashMap::<String, Vec<String>>::new();
         for tool in tools {
-            let Some(properties) = tool
-                .function
-                .parameters
-                .as_ref()
-                .and_then(|parameters| parameters.get("properties"))
-                .and_then(Value::as_object)
-            else {
+            let Some(parameters) = tool.function.parameters.as_ref() else {
+                continue;
+            };
+            let Some(properties) = protocol::parameter_properties(parameters) else {
                 continue;
             };
             let names = properties
                 .iter()
-                .filter(|(_, schema)| declares_boolean(schema))
+                .filter(|(_, schema)| declares_boolean(schema, parameters))
                 .map(|(name, _)| name.clone());
             let mut names = names.peekable();
             if names.peek().is_some() {
@@ -455,15 +454,9 @@ impl BooleanArguments {
     }
 }
 
-fn declares_boolean(schema: &Value) -> bool {
-    match schema.get("type") {
-        Some(Value::String(ty)) => ty == "boolean",
-        Some(Value::Array(types)) => {
-            let lists = |name: &str| types.iter().any(|ty| ty.as_str() == Some(name));
-            lists("boolean") && !lists("string")
-        }
-        _ => false,
-    }
+fn declares_boolean(schema: &Value, root: &Value) -> bool {
+    let types = protocol::DeclaredTypes::of(schema, root);
+    types.boolean && !types.string && !types.unreadable
 }
 
 fn spelled_boolean(text: &str) -> Option<bool> {
@@ -569,5 +562,64 @@ mod tests {
 
         BooleanArguments::default().coerce(&mut call);
         assert_eq!(call.arguments, json!({"flag": "True"}));
+    }
+
+    fn coerced(parameters: Value, arguments: Value) -> Value {
+        let booleans = BooleanArguments::from_tools(&[tool("t", parameters)]);
+        let mut call = ToolCall::new("t", arguments);
+        booleans.coerce(&mut call);
+        call.arguments
+    }
+
+    #[test]
+    fn nullable_and_referenced_boolean_schemas_are_read() {
+        let args = json!({
+            "opt": "True", "one": "false", "refd": "TRUE", "nested": "False",
+            "mixed": "True", "other": "True",
+        });
+        let parameters = json!({"type": "object", "properties": {
+            // pydantic `Optional[bool]`
+            "opt": {"anyOf": [{"type": "boolean"}, {"type": "null"}], "default": null},
+            "one": {"oneOf": [{"type": "boolean"}, {"type": "integer"}]},
+            "refd": {"$ref": "#/$defs/Flag"},
+            "nested": {"anyOf": [{"$ref": "#/$defs/Flag"}, {"type": "null"}]},
+            // ambiguous: the text `True` may be the answer
+            "mixed": {"anyOf": [{"type": "string"}, {"type": "boolean"}]},
+            "other": {"type": "integer"},
+        }, "$defs": {"Flag": {"type": "boolean", "title": "Flag"}}});
+        assert_eq!(
+            coerced(parameters, args),
+            json!({
+                "opt": true, "one": false, "refd": true, "nested": false,
+                "mixed": "True", "other": "True",
+            })
+        );
+    }
+
+    #[test]
+    fn a_parameters_object_behind_a_top_level_ref_is_read() {
+        let parameters = json!({
+            "$ref": "#/$defs/Args",
+            "$defs": {"Args": {"type": "object", "properties": {"flag": {"type": "boolean"}}}},
+        });
+        assert_eq!(
+            coerced(parameters, json!({"flag": "True"})),
+            json!({"flag": true})
+        );
+    }
+
+    #[test]
+    fn unreadable_schemas_are_left_untyped() {
+        let parameters = json!({"type": "object", "properties": {
+            "dangling": {"anyOf": [{"type": "boolean"}, {"$ref": "#/$defs/Missing"}]},
+            "remote": {"$ref": "https://example.com/flag.json"},
+            "open": {"anyOf": [{"type": "boolean"}, {}]},
+            "cycle": {"$ref": "#/properties/cycle"},
+            "bare": {"description": "no type at all"},
+        }});
+        let args = json!({
+            "dangling": "True", "remote": "True", "open": "True", "cycle": "True", "bare": "True"
+        });
+        assert_eq!(coerced(parameters, args.clone()), args);
     }
 }

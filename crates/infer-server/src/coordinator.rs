@@ -974,6 +974,29 @@ fn finalize_chat_content(
     (content, tool_calls, false)
 }
 
+/// The non-streaming `/v1/messages` tool parse: only when tools are active
+/// (the prompt advertised them), keeping the reasoning in the content for
+/// `from_parts` to split. Unlike [`finalize_chat_content`] it does not split
+/// reasoning first (Anthropic keeps thinking blocks beside `tool_use`).
+fn parse_anthropic_tool_calls(
+    decoded: &str,
+    tools_active: bool,
+    booleans: &chat::BooleanArguments,
+) -> (String, Vec<ResponseToolCall>) {
+    let (content, mut calls) = if tools_active {
+        chat::openai_parse_tool_calls(decoded)
+    } else {
+        (decoded.to_string(), Vec::new())
+    };
+    booleans.coerce_all(&mut calls);
+    let tool_calls = calls
+        .iter()
+        .enumerate()
+        .map(|(index, call)| ResponseToolCall::from_parsed(call, index))
+        .collect();
+    (content, tool_calls)
+}
+
 /// `true` when the rendered prompt ends with an open `<think>` — the chat
 /// template prefilled thinking (e.g. Qwen3.6's Jinja defaults `enable_thinking`
 /// on), so output arrives as `reasoning</think>answer` regardless of what the
@@ -2022,17 +2045,7 @@ async fn anthropic_messages(
     // precede text/tool_use blocks). Parse tool calls only when tools are
     // active (the prompt advertised them), then hand the result to
     // `from_parts` so it splits reasoning into `reasoning_content`.
-    let (content, mut calls) = if tools_active {
-        chat::openai_parse_tool_calls(&decoded)
-    } else {
-        (decoded.clone(), Vec::new())
-    };
-    booleans.coerce_all(&mut calls);
-    let tool_calls: Vec<ResponseToolCall> = calls
-        .iter()
-        .enumerate()
-        .map(|(index, call)| ResponseToolCall::from_parsed(call, index))
-        .collect();
+    let (content, tool_calls) = parse_anthropic_tool_calls(&decoded, tools_active, &booleans);
     let reasoning_tokens =
         count_reasoning_tokens(&outcome.generated_tokens, state.think_token_ids, thinking);
     let chat = ChatCompletionResponse::from_parts(
@@ -2184,6 +2197,13 @@ mod tests {
 
         let booleans = chat::BooleanArguments::from_tools(&tools);
         let (_, calls, _) = finalize_chat_content(decoded.to_string(), true, &booleans, false);
+        assert_eq!(calls.len(), 1);
+        let arguments: serde_json::Value =
+            serde_json::from_str(&calls[0].function.arguments).unwrap();
+        assert_eq!(arguments, json!({"count": 17, "flag": true}));
+
+        // The Anthropic non-stream path parses with its own function.
+        let (_, calls) = parse_anthropic_tool_calls(decoded, true, &booleans);
         assert_eq!(calls.len(), 1);
         let arguments: serde_json::Value =
             serde_json::from_str(&calls[0].function.arguments).unwrap();

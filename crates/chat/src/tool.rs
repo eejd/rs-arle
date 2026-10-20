@@ -434,6 +434,99 @@ fn extract_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
     (out, calls)
 }
 
+/// The scalar types a JSON-schema fragment can accept, read from `type`,
+/// `anyOf` / `oneOf` branches and local `$ref`s (`#/...`, resolved against the
+/// tool's `parameters` object, depth-limited so a cyclic `$ref` terminates).
+/// `null` is ignored: `Optional[bool]` (pydantic: `anyOf: [boolean, null]`) is a
+/// boolean for this purpose.
+#[derive(Debug, Default)]
+pub(crate) struct DeclaredTypes {
+    pub(crate) string: bool,
+    pub(crate) boolean: bool,
+    /// Any other type (`integer`, `array`, ...).
+    pub(crate) other: bool,
+    /// A branch whose type cannot be read: no `type` / `anyOf` / `oneOf` /
+    /// `$ref`, a `$ref` that is not a resolvable local pointer, a non-string
+    /// `type` entry, or nesting past the depth limit. Callers must not type
+    /// a parameter on the strength of a schema with an unreadable branch.
+    pub(crate) unreadable: bool,
+}
+
+const SCHEMA_DEPTH_LIMIT: u8 = 8;
+
+impl DeclaredTypes {
+    pub(crate) fn of(schema: &Value, root: &Value) -> Self {
+        let mut types = Self::default();
+        types.collect(schema, root, 0);
+        types
+    }
+
+    fn collect(&mut self, schema: &Value, root: &Value, depth: u8) {
+        if depth >= SCHEMA_DEPTH_LIMIT {
+            self.unreadable = true;
+            return;
+        }
+        let mut readable = false;
+        match schema.get("type") {
+            Some(Value::String(ty)) => {
+                readable = true;
+                self.note(ty);
+            }
+            Some(Value::Array(types)) => {
+                readable = true;
+                for ty in types {
+                    match ty.as_str() {
+                        Some(ty) => self.note(ty),
+                        None => self.unreadable = true,
+                    }
+                }
+            }
+            _ => {}
+        }
+        for key in ["anyOf", "oneOf"] {
+            if let Some(Value::Array(branches)) = schema.get(key) {
+                readable = true;
+                for branch in branches {
+                    self.collect(branch, root, depth + 1);
+                }
+            }
+        }
+        if let Some(reference) = schema.get("$ref") {
+            readable = true;
+            match reference
+                .as_str()
+                .and_then(|r| r.strip_prefix('#'))
+                .and_then(|pointer| root.pointer(pointer))
+            {
+                Some(target) => self.collect(target, root, depth + 1),
+                None => self.unreadable = true,
+            }
+        }
+        if !readable {
+            self.unreadable = true;
+        }
+    }
+
+    fn note(&mut self, ty: &str) {
+        match ty {
+            "string" => self.string = true,
+            "boolean" => self.boolean = true,
+            "null" => {}
+            _ => self.other = true,
+        }
+    }
+}
+
+/// The `properties` of a tool's `parameters` object, following one top-level
+/// local `$ref` (pydantic emits `{"$ref": "#/$defs/Args", "$defs": {...}}`).
+pub(crate) fn parameter_properties(parameters: &Value) -> Option<&Map<String, Value>> {
+    let object = match parameters.get("$ref").and_then(Value::as_str) {
+        Some(reference) => parameters.pointer(reference.strip_prefix('#')?)?,
+        None => parameters,
+    };
+    object.get("properties")?.as_object()
+}
+
 /// Structured tool definition used for prompt injection.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ToolDefinition {
