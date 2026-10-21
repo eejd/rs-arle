@@ -171,7 +171,10 @@ pub(crate) fn parse_tool_call_block(json_str: &str) -> Option<ToolCall> {
     Some(ToolCall::new(name, arguments))
 }
 
-pub(crate) fn parse_streaming_tool_call_block(inner: &str) -> Option<ToolCall> {
+pub(crate) fn parse_streaming_tool_call_block(
+    inner: &str,
+    schemas: &ToolSchemas,
+) -> Option<ToolCall> {
     let inner = inner.trim();
     if inner.is_empty() {
         return None;
@@ -180,7 +183,7 @@ pub(crate) fn parse_streaming_tool_call_block(inner: &str) -> Option<ToolCall> {
     if let Some(function_pos) = inner.find("<function=")
         && inner[..function_pos].trim().is_empty()
     {
-        return parse_native_function_block(&inner[function_pos..]);
+        return parse_native_function_block(&inner[function_pos..], schemas);
     }
 
     let json_start = inner.find('{')?;
@@ -263,7 +266,7 @@ fn quoted_attr_value(attrs: &str, key: &str) -> Option<String> {
     Some(tail[..end].to_string())
 }
 
-pub(crate) fn parse_native_function_block(inner: &str) -> Option<ToolCall> {
+pub(crate) fn parse_native_function_block(inner: &str, schemas: &ToolSchemas) -> Option<ToolCall> {
     let fstart = inner.find("<function=")?;
     let after_fn = &inner[fstart + "<function=".len()..];
     let name_end = after_fn.find('>')?;
@@ -284,14 +287,134 @@ pub(crate) fn parse_native_function_block(inner: &str) -> Option<ToolCall> {
             break;
         };
         let value_text = strip_one_surrounding_newline(&val_area[..pe]);
-        let value = serde_json::from_str::<Value>(value_text.trim())
-            .ok()
-            .filter(|v| !v.is_string())
-            .unwrap_or_else(|| Value::String(value_text.to_string()));
+        let value = typed_parameter_value(value_text, schemas.parameter_type(&name, &key));
         args.insert(key, value);
         rest = &val_area[pe + "</parameter>".len()..];
     }
     Some(ToolCall::new(name, Value::Object(args)))
+}
+
+/// How a request's tool schema says a parameter's text is to be read.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ParameterType {
+    /// `string`: the text is the value, whatever it looks like.
+    Text,
+    /// `boolean`: `true` / `false` in any case, which includes Python's
+    /// `True` / `False`.
+    Boolean,
+}
+
+/// The tool definitions of a request, reduced to what the tool-call parse
+/// needs: which parameters are declared `string` or `boolean`.
+///
+/// Qwen's native tool-call XML carries every scalar as bare text, and its chat
+/// template spells it with Jinja's `string` filter, so a boolean is `True`, an
+/// integer `17`, and a string `12345` is also just `12345`. The text alone
+/// cannot say which one it is; the request's tool schema can. A parameter
+/// declared `string` is returned as its exact text; one declared `boolean` is
+/// read as a boolean (`True` / `False` included). Every other parameter, and
+/// every parameter of a tool the schemas do not describe, is typed from its text
+/// alone (JSON scalar, array or object, else string), as before.
+///
+/// Schemas are read through `type`, `anyOf` / `oneOf` and local `$ref`
+/// ([`DeclaredTypes`]); `null` is ignored, so pydantic's `Optional[bool]` is a
+/// boolean.
+#[derive(Debug, Clone, Default)]
+pub struct ToolSchemas {
+    by_tool: std::collections::HashMap<String, std::collections::HashMap<String, ParameterType>>,
+}
+
+impl ToolSchemas {
+    /// The schemas of tool definitions in the internal canonical format.
+    pub fn from_definitions(tools: &[ToolDefinition]) -> Self {
+        Self::from_parameters(
+            tools
+                .iter()
+                .map(|tool| (tool.name.as_str(), &tool.parameters)),
+        )
+    }
+
+    /// `(tool name, JSON-schema `parameters`)` pairs.
+    pub(crate) fn from_parameters<'a>(tools: impl Iterator<Item = (&'a str, &'a Value)>) -> Self {
+        let mut by_tool = std::collections::HashMap::<_, std::collections::HashMap<_, _>>::new();
+        for (name, parameters) in tools {
+            let Some(properties) = parameter_properties(parameters) else {
+                continue;
+            };
+            let declared = properties.iter().filter_map(|(key, schema)| {
+                Some((key.clone(), declared_type(schema, parameters)?))
+            });
+            by_tool
+                .entry(name.to_string())
+                .or_default()
+                .extend(declared);
+        }
+        by_tool.retain(|_, parameters| !parameters.is_empty());
+        Self { by_tool }
+    }
+
+    fn parameter_type(&self, tool: &str, parameter: &str) -> Option<ParameterType> {
+        self.by_tool.get(tool)?.get(parameter).copied()
+    }
+}
+
+/// What a parameter schema declares, read through `type`, `anyOf` / `oneOf`
+/// and local `$ref`s ([`DeclaredTypes`]): `string` when it accepts a string
+/// and nothing but `null` besides; `boolean` when it accepts a boolean and no
+/// string. A schema with an unreadable branch, or one that accepts a string
+/// beside another type (`["string", "integer"]`, `["string", "boolean"]`),
+/// declares nothing: the text could be either, so it is typed from its text.
+fn declared_type(schema: &Value, root: &Value) -> Option<ParameterType> {
+    let types = DeclaredTypes::of(schema, root);
+    match types {
+        DeclaredTypes {
+            unreadable: true, ..
+        } => None,
+        DeclaredTypes {
+            string: true,
+            boolean: false,
+            other: false,
+            ..
+        } => Some(ParameterType::Text),
+        DeclaredTypes {
+            string: false,
+            boolean: true,
+            ..
+        } => Some(ParameterType::Boolean),
+        _ => None,
+    }
+}
+
+fn spelled_boolean(text: &str) -> Option<bool> {
+    let text = text.trim();
+    if text.eq_ignore_ascii_case("true") {
+        Some(true)
+    } else if text.eq_ignore_ascii_case("false") {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+/// The value of one `<parameter=...>` text, read by the declared type of its
+/// parameter where there is one.
+fn typed_parameter_value(text: &str, declared: Option<ParameterType>) -> Value {
+    match declared {
+        Some(ParameterType::Text) => Value::String(text.to_string()),
+        Some(ParameterType::Boolean) => spelled_boolean(text)
+            .map(Value::Bool)
+            .unwrap_or_else(|| text_typed_value(text)),
+        None => text_typed_value(text),
+    }
+}
+
+/// Type a parameter text from its own shape: a JSON scalar, array or object,
+/// else the text as a string.
+fn text_typed_value(text: &str) -> Value {
+    serde_json::from_str::<Value>(text.trim())
+        .ok()
+        .filter(|v| !v.is_string())
+        .unwrap_or_else(|| Value::String(text.to_string()))
 }
 
 fn strip_one_surrounding_newline(s: &str) -> &str {
@@ -340,7 +463,7 @@ fn split_arguments_object(s: &str) -> Option<(Value, usize)> {
     Some((value, consumed))
 }
 
-fn extract_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
+fn extract_tool_calls(text: &str, schemas: &ToolSchemas) -> (String, Vec<ToolCall>) {
     if !text.contains(TOOL_CALL_BLOCK.open) && !text.contains(DSML_TOOL_CALLS_BLOCK.open) {
         return (text.to_string(), Vec::new());
     }
@@ -369,7 +492,7 @@ fn extract_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
         {
             let consumed = if let Some(fend) = after.find("</function>") {
                 let end = fend + "</function>".len();
-                if let Some(call) = parse_native_function_block(&after[..end]) {
+                if let Some(call) = parse_native_function_block(&after[..end], schemas) {
                     calls.push(call);
                 }
                 match after[end..].find(TOOL_CALL_BLOCK.close) {
@@ -665,11 +788,233 @@ fn push_parameter(out: &mut String, key: &str, value: &Value) {
 }
 
 /// Parse `<tool_call>...</tool_call>` blocks from raw assistant output.
-pub fn parse_tool_calls(text: &str) -> super::ParsedAssistantResponse {
-    let (stripped, tool_calls) = extract_tool_calls(text);
+///
+/// `schemas` types native `<parameter=...>` values by the declared parameter
+/// types (see [`ToolSchemas`]); `&ToolSchemas::default()` types them from
+/// their text alone.
+pub fn parse_tool_calls(text: &str, schemas: &ToolSchemas) -> super::ParsedAssistantResponse {
+    let (stripped, tool_calls) = extract_tool_calls(text, schemas);
 
     super::ParsedAssistantResponse {
         content: THINK_BLOCK.strip_all(&stripped).trim().to_string(),
         tool_calls,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tools() -> ToolSchemas {
+        ToolSchemas::from_parameters(
+            [
+                (
+                    "echo_args",
+                    &json!({"type": "object", "properties": {
+                        "text": {"type": "string"},
+                        "zip": {"type": "string"},
+                        "note": {"type": ["string", "null"]},
+                        "word": {"type": "string"},
+                        "count": {"type": "integer"},
+                        "flag": {"type": "boolean"},
+                        "maybe": {"type": ["boolean", "null"]},
+                        "either": {"type": ["string", "integer"]},
+                        "any": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+                        "optflag": {"anyOf": [{"type": "boolean"}, {"type": "null"}]},
+                        "optzip": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                        "refzip": {"$ref": "#/$defs/Zip"},
+                        "refflag": {"$ref": "#/$defs/Flag"},
+                        "nestedzip": {"anyOf": [{"$ref": "#/$defs/Zip"}, {"type": "null"}]},
+                        "choice": {"oneOf": [{"type": "boolean"}, {"type": "integer"}]},
+                        "v1zip": {"allOf": [{"$ref": "#/$defs/Zip"}], "default": "0"},
+                        "both": {"anyOf": [{"type": "string"}, {"type": "boolean"}]},
+                        "dangling": {"$ref": "#/$defs/Missing"},
+                    }, "$defs": {"Zip": {"type": "string", "title": "Zip"},
+                                       "Flag": {"type": "boolean"}}}),
+                ),
+                ("no_properties", &json!({"type": "object"})),
+            ]
+            .into_iter(),
+        )
+    }
+
+    fn call(tool: &str, parameters: &[(&str, &str)]) -> String {
+        let mut out = format!("<tool_call>\n<function={tool}>\n");
+        for (key, value) in parameters {
+            out.push_str(&format!("<parameter={key}>\n{value}\n</parameter>\n"));
+        }
+        out.push_str("</function>\n</tool_call>");
+        out
+    }
+
+    fn parsed(text: &str, schemas: &ToolSchemas) -> Value {
+        let calls = parse_tool_calls(text, schemas).tool_calls;
+        assert_eq!(calls.len(), 1);
+        calls[0].arguments.clone()
+    }
+
+    fn streamed(text: &str, schemas: &ToolSchemas, chunk: usize) -> Value {
+        let mut stream = crate::StreamingToolCalls::new(schemas.clone());
+        let mut calls = Vec::new();
+        let chars: Vec<char> = text.chars().collect();
+        for piece in chars.chunks(chunk) {
+            calls.extend(stream.push(&piece.iter().collect::<String>()).1);
+        }
+        calls.extend(stream.finish().1);
+        assert_eq!(calls.len(), 1);
+        calls.remove(0).arguments
+    }
+
+    #[test]
+    fn declared_parameters_are_typed_by_the_schema() {
+        // The Qwen3.5 text of the quantbench `scalars` case (`True`), and
+        // string parameters whose text looks like a number, `null`, a boolean.
+        let text = call(
+            "echo_args",
+            &[
+                ("text", "hand summer"),
+                ("count", "17"),
+                ("flag", "True"),
+                ("zip", "12345"),
+                ("note", "null"),
+                ("word", "true"),
+                ("maybe", " FALSE "),
+                ("optflag", "True"),
+                ("optzip", "12345"),
+                ("refzip", "12345"),
+                ("refflag", "True"),
+                ("nestedzip", "20240131"),
+                ("choice", "FALSE"),
+                ("v1zip", "8675309"),
+                ("refzip2", "5"),
+            ],
+        );
+        let want = json!({
+            "text": "hand summer", "count": 17, "flag": true, "zip": "12345",
+            "note": "null", "word": "true", "maybe": false,
+            "optflag": true, "optzip": "12345", "refzip": "12345", "refzip2": 5,
+            "refflag": true, "nestedzip": "20240131", "choice": false, "v1zip": "8675309"
+        });
+        assert_eq!(parsed(&text, &tools()), want);
+        for chunk in [1, 7, text.len()] {
+            assert_eq!(streamed(&text, &tools(), chunk), want, "chunk {chunk}");
+        }
+    }
+
+    #[test]
+    fn without_a_declaration_the_text_types_itself() {
+        // Undeclared parameter, ambiguous `type` array, `anyOf`, a boolean
+        // parameter whose text is no boolean, a tool without `properties` and
+        // a tool the schemas do not know.
+        let text = call(
+            "echo_args",
+            &[
+                ("extra", "5"),
+                ("either", "12345"),
+                ("any", "12345"),
+                ("both", "true"),
+                ("dangling", "12345"),
+                ("flag", "yes"),
+                ("items", "[1, 2]"),
+            ],
+        );
+        assert_eq!(
+            parsed(&text, &tools()),
+            json!({
+                "extra": 5, "either": 12345, "any": 12345, "both": true, "dangling": 12345,
+                "flag": "yes", "items": [1, 2]
+            })
+        );
+        for tool in ["no_properties", "unknown_tool"] {
+            let text = call(tool, &[("zip", "12345"), ("flag", "True"), ("on", "true")]);
+            assert_eq!(
+                parsed(&text, &tools()),
+                json!({"zip": 12345, "flag": "True", "on": true}),
+                "{tool}"
+            );
+        }
+        assert_eq!(
+            parsed(
+                &call("echo_args", &[("zip", "12345")]),
+                &ToolSchemas::default()
+            ),
+            json!({"zip": 12345})
+        );
+    }
+
+    #[test]
+    fn json_tool_call_arguments_are_not_retyped() {
+        let text = r#"<tool_call>{"name": "echo_args", "arguments": {"zip": 12345, "text": "12345", "flag": "True"}}</tool_call>"#;
+        assert_eq!(
+            parsed(text, &tools()),
+            json!({"zip": 12345, "text": "12345", "flag": "True"})
+        );
+    }
+
+    #[test]
+    fn a_parameters_object_behind_a_top_level_ref_is_read() {
+        let schemas = ToolSchemas::from_parameters(
+            [(
+                "echo_args",
+                &json!({
+                    "$ref": "#/$defs/Args",
+                    "$defs": {"Args": {"type": "object", "properties": {
+                        "zip": {"type": "string"}, "flag": {"type": "boolean"},
+                    }}},
+                }),
+            )]
+            .into_iter(),
+        );
+        assert_eq!(
+            parsed(
+                &call("echo_args", &[("zip", "12345"), ("flag", "True")]),
+                &schemas
+            ),
+            json!({"zip": "12345", "flag": true})
+        );
+    }
+
+    #[test]
+    fn adversarial_schemas_leave_the_parameter_text_typed_and_return() {
+        // 400 branches that are all `$ref`s back to the definition, and a
+        // chain that doubles at each of 20 levels: both unreadable, so
+        // `zip` (a `string` on paper) is typed from its text; no blow-up.
+        let selfref: Vec<Value> = (0..400).map(|_| json!({"$ref": "#/$defs/A"})).collect();
+        let mut defs = serde_json::Map::new();
+        for i in 0..20 {
+            let next = json!({"$ref": format!("#/$defs/D{}", i + 1)});
+            defs.insert(format!("D{i}"), json!({"anyOf": [next.clone(), next]}));
+        }
+        defs.insert("D20".into(), json!({"type": "string"}));
+        defs.insert("A".into(), json!({"anyOf": selfref}));
+        // wider than the node limit, though every branch is a plain string
+        let wide: Vec<Value> = (0..400).map(|_| json!({"type": "string"})).collect();
+        let schemas = ToolSchemas::from_parameters(
+            [(
+                "echo_args",
+                &json!({"type": "object", "properties": {
+                    "zip": {"$ref": "#/$defs/A"},
+                    "deep": {"$ref": "#/$defs/D0"},
+                    "text": {"type": "string"},
+                    "wide": {"anyOf": wide},
+                }, "$defs": Value::Object(defs)}),
+            )]
+            .into_iter(),
+        );
+        assert_eq!(
+            parsed(
+                &call(
+                    "echo_args",
+                    &[
+                        ("zip", "12345"),
+                        ("deep", "67890"),
+                        ("text", "11"),
+                        ("wide", "99")
+                    ]
+                ),
+                &schemas
+            ),
+            json!({"zip": 12345, "deep": 67890, "text": "11", "wide": 99})
+        );
     }
 }

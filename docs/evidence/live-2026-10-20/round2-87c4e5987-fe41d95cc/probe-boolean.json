@@ -1,0 +1,2794 @@
+[
+ {
+  "label": "boolean",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-00",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 17,
+     "flag": true,
+     "text": "hand summer"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "hand summer",
+     "count": 17,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-01",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-01",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-01",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-01",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "age",
+      "computer",
+      "issue"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-02",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-02",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-02",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-02",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 2,
+      "unit": "a"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "a",
+      "depth": 2
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-03",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if student < way and official > organization then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-04",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-04",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-04",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-04",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def canyon(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-05",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 26,
+     "flag": true,
+     "text": "winter foot"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "winter foot",
+     "count": 26,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-06",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-06",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-06",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-06",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "period",
+      "space",
+      "world"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "period",
+      "space",
+      "world"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-07",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-07",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-07",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-07",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 5,
+      "unit": "m"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "m",
+      "depth": 5
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-08",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if interest < couple and summer > way then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-09",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-09",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-09",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-09",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def rate(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-10",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 34,
+     "flag": true,
+     "text": "technology issue"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "technology issue",
+     "count": 34,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-11",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-11",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-11",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-11",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "wife",
+      "form",
+      "garden"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-12",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-12",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-12",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-12",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 3,
+      "unit": "s"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "s",
+      "depth": 3
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-13",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if night < research and state > moment then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-14",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-14",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-14",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-14",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def doctor(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "scalars-15",
+  "group": "scalars",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "count": 29,
+     "flag": true,
+     "text": "foot control"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "foot control",
+     "count": 29,
+     "flag": true
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-16",
+  "group": "list",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-16",
+  "group": "list",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-16",
+  "group": "list",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "list-16",
+  "group": "list",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ],
+     "text": "list"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "list",
+     "items": [
+      "effort",
+      "care",
+      "party"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-17",
+  "group": "object",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-17",
+  "group": "object",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-17",
+  "group": "object",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "object-17",
+  "group": "object",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "nested": {
+      "depth": 4,
+      "unit": "p"
+     },
+     "text": "obj"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "obj",
+     "nested": {
+      "unit": "p",
+      "depth": 4
+     }
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "markup-18",
+  "group": "markup",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "if organization < state and control > table then <ok> & done"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-19",
+  "group": "code",
+  "path": "openai",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-19",
+  "group": "code",
+  "path": "openai-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-19",
+  "group": "code",
+  "path": "anthropic",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "code-19",
+  "group": "code",
+  "path": "anthropic-stream",
+  "ok": true,
+  "got": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_args",
+    {
+     "text": "def kid(x):\n    return x + 1"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-00",
+  "group": "strnum",
+  "path": "openai",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": true,
+     "zip": 12345
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "12345",
+     "word": "true"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-00",
+  "group": "strnum",
+  "path": "openai-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": true,
+     "zip": 12345
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "12345",
+     "word": "true"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-00",
+  "group": "strnum",
+  "path": "anthropic",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": true,
+     "zip": 12345
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "12345",
+     "word": "true"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-00",
+  "group": "strnum",
+  "path": "anthropic-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": true,
+     "zip": 12345
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "12345",
+     "word": "true"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-01",
+  "group": "strnum",
+  "path": "openai",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": null,
+     "zip": 20240131
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "20240131",
+     "word": "null"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-01",
+  "group": "strnum",
+  "path": "openai-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": null,
+     "zip": 20240131
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "20240131",
+     "word": "null"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-01",
+  "group": "strnum",
+  "path": "anthropic",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": null,
+     "zip": 20240131
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "20240131",
+     "word": "null"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-01",
+  "group": "strnum",
+  "path": "anthropic-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": null,
+     "zip": 20240131
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "20240131",
+     "word": "null"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-02",
+  "group": "strnum",
+  "path": "openai",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": false,
+     "zip": 3.5
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "3.50",
+     "word": "false"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-02",
+  "group": "strnum",
+  "path": "openai-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": false,
+     "zip": 3.5
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "3.50",
+     "word": "false"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-02",
+  "group": "strnum",
+  "path": "anthropic",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": false,
+     "zip": 3.5
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "3.50",
+     "word": "false"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-02",
+  "group": "strnum",
+  "path": "anthropic-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": false,
+     "zip": 3.5
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "3.50",
+     "word": "false"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-03",
+  "group": "strnum",
+  "path": "openai",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "True",
+     "zip": 8675309
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "8675309",
+     "word": "True"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-03",
+  "group": "strnum",
+  "path": "openai-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "True",
+     "zip": 8675309
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "8675309",
+     "word": "True"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-03",
+  "group": "strnum",
+  "path": "anthropic",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "True",
+     "zip": 8675309
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "8675309",
+     "word": "True"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-03",
+  "group": "strnum",
+  "path": "anthropic-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "True",
+     "zip": 8675309
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "8675309",
+     "word": "True"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-04",
+  "group": "strnum",
+  "path": "openai",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "None",
+     "zip": 1000.0
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "1e3",
+     "word": "None"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-04",
+  "group": "strnum",
+  "path": "openai-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "None",
+     "zip": 1000.0
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "1e3",
+     "word": "None"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-04",
+  "group": "strnum",
+  "path": "anthropic",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "None",
+     "zip": 1000.0
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "1e3",
+     "word": "None"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-04",
+  "group": "strnum",
+  "path": "anthropic-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": "None",
+     "zip": 1000.0
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "1e3",
+     "word": "None"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-05",
+  "group": "strnum",
+  "path": "openai",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": 42,
+     "zip": 42
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "42",
+     "word": "42"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-05",
+  "group": "strnum",
+  "path": "openai-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": 42,
+     "zip": 42
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "42",
+     "word": "42"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-05",
+  "group": "strnum",
+  "path": "anthropic",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": 42,
+     "zip": 42
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "42",
+     "word": "42"
+    }
+   ]
+  ]
+ },
+ {
+  "label": "boolean",
+  "case": "strnum-05",
+  "group": "strnum",
+  "path": "anthropic-stream",
+  "ok": false,
+  "got": [
+   [
+    "echo_str",
+    {
+     "word": 42,
+     "zip": 42
+    }
+   ]
+  ],
+  "want": [
+   [
+    "echo_str",
+    {
+     "zip": "42",
+     "word": "42"
+    }
+   ]
+  ]
+ }
+]

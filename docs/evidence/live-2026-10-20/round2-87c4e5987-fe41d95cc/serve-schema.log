@@ -1,0 +1,129 @@
+logging: file sink disabled, failed to open logs: failed to create log directory, source: Permission denied (os error 13)
+[ARLE serve] starting metal backend in-process on 127.0.0.1:14863
+1792533034597550000   INFO infer_metal::model_source: model_source.rs:18 Using local model path: $MODEL_CACHE/models--mlx-community--Qwen3.5-4B-4bit/snapshots/0e7ffd5c629ef7719d4cbc04069232580bfa9d9c
+1792533034597960000   INFO infer_metal::model_source: model_source.rs:18 Using local model path: $MODEL_CACHE/models--mlx-community--Qwen3.5-4B-4bit/snapshots/0e7ffd5c629ef7719d4cbc04069232580bfa9d9c
+1792533034628636000   WARN infer_metal::resource: resource.rs:253 Metal resource guard: residual macOS swap is present but not a hard failure: system total=64.0GiB available=58.5GiB gpu_working_set=51.8GiB swap_used=1072MiB paging_delta=not_sampled
+1792533034628832000   INFO infer_metal::model_source: model_source.rs:18 Using local model path: $MODEL_CACHE/models--mlx-community--Qwen3.5-4B-4bit/snapshots/0e7ffd5c629ef7719d4cbc04069232580bfa9d9c
+1792533034680450000   INFO infer_server::tokenizer: tokenizer.rs:98 tokenizer: binary cache hit ($MODEL_CACHE/models--mlx-community--Qwen3.5-4B-4bit/snapshots/0e7ffd5c629ef7719d4cbc04069232580bfa9d9c)
+[infer-metal] resource guard: system total=64.0GiB available=58.5GiB gpu_working_set=51.8GiB swap_used=1072MiB paging_delta=not_sampled memory_limit=48GiB wired=3GiB cache=1024MiB weights=2GiB runtime_headroom=4GiB static_state=12576MiB kv_budget=24GiB kv_capacity_tokens=131072 pages=8192
+[infer-metal] kv cache dtype = int8
+1792533034689212000   INFO infer_metal::resource: resource.rs:197 Metal resource guard set MLX limits: memory=51539607552 (previous 65283502899), cache=1073741824 (previous 65283502899), wired=4115247891 (previous 0)
+1792533034689480000   INFO infer_metal::loader: loader.rs:147   using index: 1 shards
+1792533034689507000   INFO infer_metal::loader: loader.rs:25   loading 1 shard(s) via MLX mmap
+1792533034691504000   INFO infer_metal::loader: loader.rs:40   loaded 1221 tensors (memory-mapped)
+1792533034694489000   INFO infer_metal::loader: loader.rs:112   dequantizing embed_tokens at load time
+1792533034740584000   INFO infer_metal::qwen35: qwen35.rs:163   32 Qwen3.5/Qwen3.6 layers (8 full attention, 24 GDR, 0 MoE)
+1792533034742409000   INFO infer_metal::qwen35: qwen35.rs:836   C++ Qwen3.5 forward model ready (32 layers)
+[infer-metal] warmup (--metal-warmup) = false
+1792533034742496000   WARN infer_core: lib.rs:636 executor caps rows per step at 1; scheduler slots 256 -> 1
+1792533034755872000   WARN infer_server: lib.rs:647 structured output unavailable: build xgrammar compiler from the model vocabulary
+1792533034756304000   INFO infer_api::serve: serve.rs:370 serving OpenAI v1 on http://127.0.0.1:14863 ($MODEL_CACHE/models--mlx-community--Qwen3.5-4B-4bit/snapshots/0e7ffd5c629ef7719d4cbc04069232580bfa9d9c)
+1792533036763688000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=0 licensed_blocks=0
+[infer-metal] decode pipeline (--metal-pipeline) = false
+[infer-metal] paged KV read (--metal-paged-kv-read) = false
+1792533037806266000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=19
+1792533037806274000   INFO infer_core::prefix: prefix.rs:167 prefix-attach: slot=0 matched=304 restored=304 committed=309
+1792533038408190000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533040078461000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533041749184000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=18 licensed_blocks=0
+1792533042714335000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533043679302000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533045242694000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533046810437000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=18 licensed_blocks=0
+1792533047827925000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=19 licensed_blocks=0
+1792533048844575000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533050450630000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533052058409000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=18 licensed_blocks=0
+1792533052952972000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=19 licensed_blocks=0
+1792533053847299000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533055427533000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533057009041000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=18 licensed_blocks=0
+1792533057903375000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=21 licensed_blocks=0
+1792533058794815000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533061117001000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533063435198000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=18 licensed_blocks=0
+1792533064452128000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533065468245000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533067142059000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533068816852000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=18 licensed_blocks=0
+1792533069780638000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533070745750000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533072310146000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533073875990000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=18 licensed_blocks=0
+1792533074892104000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=19 licensed_blocks=0
+1792533075909128000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533077516990000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533079125163000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=18 licensed_blocks=0
+1792533080022065000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=19 licensed_blocks=0
+1792533080916553000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533082500500000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533084082707000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=18 licensed_blocks=0
+1792533084973845000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=21 licensed_blocks=0
+1792533085868526000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533088192836000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533090520457000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=18 licensed_blocks=0
+1792533091542878000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533092563140000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533094239726000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533095944296000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=18 licensed_blocks=0
+1792533096924904000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533097905298000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=310 raw_blocks=19 licensed_blocks=0
+1792533099499996000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=310 raw_blocks=19 licensed_blocks=0
+1792533101093381000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=18 licensed_blocks=0
+1792533102111875000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=19 licensed_blocks=0
+1792533103130170000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533104761048000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533106394011000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=18 licensed_blocks=0
+1792533107290805000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=19 licensed_blocks=0
+1792533108185938000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533109747774000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533111310631000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=18 licensed_blocks=0
+1792533112203955000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=21 licensed_blocks=0
+1792533113097723000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533115348617000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533117603518000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=18 licensed_blocks=0
+1792533118621029000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=309 raw_blocks=19 licensed_blocks=0
+1792533119638902000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533121316783000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=307 raw_blocks=19 licensed_blocks=0
+1792533122990393000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=18 licensed_blocks=0
+1792533123970149000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533124949746000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=310 raw_blocks=19 licensed_blocks=0
+1792533126541327000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=310 raw_blocks=19 licensed_blocks=0
+1792533128133121000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=18 licensed_blocks=0
+1792533129151300000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=314 raw_blocks=19 licensed_blocks=0
+1792533130168223000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533131765349000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=312 raw_blocks=19 licensed_blocks=0
+1792533133361652000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=18 licensed_blocks=0
+1792533134256765000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=313 raw_blocks=19 licensed_blocks=0
+1792533135150645000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533136732814000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=311 raw_blocks=19 licensed_blocks=0
+1792533138316655000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=18 licensed_blocks=0
+1792533139208550000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=339 raw_blocks=21 licensed_blocks=0
+1792533140100555000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533142419917000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=337 raw_blocks=21 licensed_blocks=0
+1792533144739691000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=280 raw_blocks=1 licensed_blocks=0
+1792533145638882000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=280 raw_blocks=17 licensed_blocks=0
+1792533146538031000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=278 raw_blocks=17 licensed_blocks=0
+1792533147991255000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=278 raw_blocks=17 licensed_blocks=0
+1792533149444837000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=283 raw_blocks=16 licensed_blocks=0
+1792533150394553000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=283 raw_blocks=17 licensed_blocks=0
+1792533151343988000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=281 raw_blocks=17 licensed_blocks=0
+1792533152963974000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=281 raw_blocks=17 licensed_blocks=0
+1792533154585098000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=279 raw_blocks=16 licensed_blocks=0
+1792533155469865000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=279 raw_blocks=17 licensed_blocks=0
+1792533156355115000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=277 raw_blocks=17 licensed_blocks=0
+1792533157781573000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=277 raw_blocks=17 licensed_blocks=0
+1792533159212228000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=282 raw_blocks=16 licensed_blocks=0
+1792533160149753000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=282 raw_blocks=17 licensed_blocks=0
+1792533161085694000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=280 raw_blocks=17 licensed_blocks=0
+1792533162679194000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=280 raw_blocks=17 licensed_blocks=0
+1792533164275117000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=278 raw_blocks=16 licensed_blocks=0
+1792533165144947000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=278 raw_blocks=17 licensed_blocks=0
+1792533166017002000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=276 raw_blocks=17 licensed_blocks=0
+1792533167408175000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=276 raw_blocks=17 licensed_blocks=0
+1792533168800854000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=278 raw_blocks=16 licensed_blocks=0
+1792533169672395000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=278 raw_blocks=17 licensed_blocks=0
+1792533170544575000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=276 raw_blocks=17 licensed_blocks=0
+1792533171998022000   INFO infer_core::prefix: prefix.rs:765 prefix-lookup: prompt=276 raw_blocks=17 licensed_blocks=0
+1792533173474449000   INFO infer_api::serve: serve.rs:502 shutdown signal received
+1792533173481825000   INFO infer_server: lib.rs:915 [local-relay-driver] shutdown

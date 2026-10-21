@@ -1,0 +1,52 @@
+{"object":"list","data":[{"id":"0e7ffd5c629ef7719d4cbc04069232580bfa9d9c","object":"model","created":1792534125,"owned_by":"arle"}]}
+base ALL {'openai': '16/26', 'openai-stream': '16/26', 'anthropic': '16/26', 'anthropic-stream': '16/26'}
+base tool_arg(20) {'openai': '16/20', 'openai-stream': '16/20', 'anthropic': '16/20', 'anthropic-stream': '16/20'}
+base strnum(6) {'openai': '0/6', 'openai-stream': '0/6', 'anthropic': '0/6', 'anthropic-stream': '0/6'}
+MISMATCH scalars-00 openai [["echo_args", {"count": 17, "flag": "True", "text": "hand summer"}]]
+MISMATCH scalars-00 openai-stream [["echo_args", {"count": 17, "flag": "True", "text": "hand summer"}]]
+MISMATCH scalars-00 anthropic [["echo_args", {"count": 17, "flag": "True", "text": "hand summer"}]]
+MISMATCH scalars-00 anthropic-stream [["echo_args", {"count": 17, "flag": "True", "text": "hand summer"}]]
+MISMATCH scalars-05 openai [["echo_args", {"count": 26, "flag": "True", "text": "winter foot"}]]
+MISMATCH scalars-05 openai-stream [["echo_args", {"count": 26, "flag": "True", "text": "winter foot"}]]
+MISMATCH scalars-05 anthropic [["echo_args", {"count": 26, "flag": "True", "text": "winter foot"}]]
+MISMATCH scalars-05 anthropic-stream [["echo_args", {"count": 26, "flag": "True", "text": "winter foot"}]]
+MISMATCH scalars-10 openai [["echo_args", {"count": 34, "flag": "True", "text": "technology issue"}]]
+MISMATCH scalars-10 openai-stream [["echo_args", {"count": 34, "flag": "True", "text": "technology issue"}]]
+MISMATCH scalars-10 anthropic [["echo_args", {"count": 34, "flag": "True", "text": "technology issue"}]]
+MISMATCH scalars-10 anthropic-stream [["echo_args", {"count": 34, "flag": "True", "text": "technology issue"}]]
+MISMATCH scalars-15 openai [["echo_args", {"count": 29, "flag": "True", "text": "foot control"}]]
+MISMATCH scalars-15 openai-stream [["echo_args", {"count": 29, "flag": "True", "text": "foot control"}]]
+MISMATCH scalars-15 anthropic [["echo_args", {"count": 29, "flag": "True", "text": "foot control"}]]
+MISMATCH scalars-15 anthropic-stream [["echo_args", {"count": 29, "flag": "True", "text": "foot control"}]]
+MISMATCH strnum-00 openai [["echo_str", {"word": true, "zip": 12345}]]
+MISMATCH strnum-00 openai-stream [["echo_str", {"word": true, "zip": 12345}]]
+MISMATCH strnum-00 anthropic [["echo_str", {"word": true, "zip": 12345}]]
+MISMATCH strnum-00 anthropic-stream [["echo_str", {"word": true, "zip": 12345}]]
+MISMATCH strnum-01 openai [["echo_str", {"word": null, "zip": 20240131}]]
+MISMATCH strnum-01 openai-stream [["echo_str", {"word": null, "zip": 20240131}]]
+MISMATCH strnum-01 anthropic [["echo_str", {"word": null, "zip": 20240131}]]
+MISMATCH strnum-01 anthropic-stream [["echo_str", {"word": null, "zip": 20240131}]]
+MISMATCH strnum-02 openai [["echo_str", {"word": false, "zip": 3.5}]]
+MISMATCH strnum-02 openai-stream [["echo_str", {"word": false, "zip": 3.5}]]
+MISMATCH strnum-02 anthropic [["echo_str", {"word": false, "zip": 3.5}]]
+MISMATCH strnum-02 anthropic-stream [["echo_str", {"word": false, "zip": 3.5}]]
+MISMATCH strnum-03 openai [["echo_str", {"word": "True", "zip": 8675309}]]
+MISMATCH strnum-03 openai-stream [["echo_str", {"word": "True", "zip": 8675309}]]
+MISMATCH strnum-03 anthropic [["echo_str", {"word": "True", "zip": 8675309}]]
+MISMATCH strnum-03 anthropic-stream [["echo_str", {"word": "True", "zip": 8675309}]]
+MISMATCH strnum-04 openai [["echo_str", {"word": "None", "zip": 1000.0}]]
+MISMATCH strnum-04 openai-stream [["echo_str", {"word": "None", "zip": 1000.0}]]
+MISMATCH strnum-04 anthropic [["echo_str", {"word": "None", "zip": 1000.0}]]
+MISMATCH strnum-04 anthropic-stream [["echo_str", {"word": "None", "zip": 1000.0}]]
+MISMATCH strnum-05 openai [["echo_str", {"word": 42, "zip": 42}]]
+MISMATCH strnum-05 openai-stream [["echo_str", {"word": 42, "zip": 42}]]
+MISMATCH strnum-05 anthropic [["echo_str", {"word": 42, "zip": 42}]]
+MISMATCH strnum-05 anthropic-stream [["echo_str", {"word": 42, "zip": 42}]]
+pkill: signalling pid 17547: Operation not permitted
+base: engine exited
+{"object":"list","data":[{"id":"0e7ffd5c629ef7719d4cbc04069232580bfa9d9c","object":"model","created":1792534267,"owned_by":"arle"}]}
+schema ALL {'openai': '26/26', 'openai-stream': '26/26', 'anthropic': '26/26', 'anthropic-stream': '26/26'}
+schema tool_arg(20) {'openai': '20/20', 'openai-stream': '20/20', 'anthropic': '20/20', 'anthropic-stream': '20/20'}
+schema strnum(6) {'openai': '6/6', 'openai-stream': '6/6', 'anthropic': '6/6', 'anthropic-stream': '6/6'}
+pkill: signalling pid 19194: Operation not permitted
+schema: engine exited
