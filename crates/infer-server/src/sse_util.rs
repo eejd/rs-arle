@@ -292,13 +292,19 @@ fn trimmed_once<'a>(started: &mut bool, text: &'a str) -> Option<&'a str> {
 pub(crate) struct StreamPipeline {
     splitter: StreamingReasoningSplitter,
     tool_stream: Option<chat::StreamingToolCalls>,
+    booleans: chat::BooleanArguments,
 }
 
 impl StreamPipeline {
-    pub(crate) fn new(thinking: bool, tools_active: bool) -> Self {
+    pub(crate) fn new(
+        thinking: bool,
+        tools_active: bool,
+        booleans: chat::BooleanArguments,
+    ) -> Self {
         Self {
             splitter: StreamingReasoningSplitter::new(thinking),
             tool_stream: tools_active.then(chat::StreamingToolCalls::default),
+            booleans,
         }
     }
 
@@ -315,7 +321,8 @@ impl StreamPipeline {
             ChatDelta::Reasoning(text) => deltas.push(ChatDelta::Reasoning(text)),
             ChatDelta::Content(text) => match self.tool_stream.as_mut() {
                 Some(stream) => {
-                    let (visible, new_calls) = stream.push(&text);
+                    let (visible, mut new_calls) = stream.push(&text);
+                    self.booleans.coerce_all(&mut new_calls);
                     calls.extend(new_calls);
                     if !visible.is_empty() {
                         deltas.push(ChatDelta::Content(visible));
@@ -344,12 +351,64 @@ impl StreamPipeline {
             self.route(piece, &mut deltas, &mut calls);
         }
         if let Some(stream) = self.tool_stream.as_mut() {
-            let (visible, new_calls) = stream.finish();
+            let (visible, mut new_calls) = stream.finish();
+            self.booleans.coerce_all(&mut new_calls);
             calls.extend(new_calls);
             if !visible.is_empty() {
                 deltas.push(ChatDelta::Content(visible));
             }
         }
         (deltas, calls)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn echo_args_tools() -> Vec<chat::OpenAiToolDefinition> {
+        vec![chat::OpenAiToolDefinition {
+            tool_type: "function".into(),
+            function: chat::OpenAiFunctionDefinition {
+                name: "echo_args".into(),
+                description: None,
+                parameters: Some(json!({"type": "object", "properties": {
+                    "text": {"type": "string"},
+                    "count": {"type": "integer"},
+                    "flag": {"type": "boolean"},
+                }})),
+            },
+        }]
+    }
+
+    // A Qwen3.5 tool call as the model writes it (the quantbench `scalars`
+    // case): the template renders non-container scalars with Jinja's `string`
+    // filter, so the boolean is `True`.
+    const QWEN_CALL: &str = "<tool_call>\n<function=echo_args>\n<parameter=text>\nhand summer\n</parameter>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n</function>\n</tool_call>";
+
+    fn stream_calls(booleans: chat::BooleanArguments, chunk: usize) -> Vec<chat::ToolCall> {
+        let mut pipeline = StreamPipeline::new(false, true, booleans);
+        let chars: Vec<char> = QWEN_CALL.chars().collect();
+        let mut calls = Vec::new();
+        for piece in chars.chunks(chunk) {
+            calls.extend(pipeline.push(&piece.iter().collect::<String>()).1);
+        }
+        calls.extend(pipeline.finish().1);
+        calls
+    }
+
+    #[test]
+    fn streamed_boolean_argument_is_typed_by_the_schema_whatever_the_chunking() {
+        let tools = echo_args_tools();
+        for chunk in [1, 7, QWEN_CALL.len()] {
+            let calls = stream_calls(chat::BooleanArguments::from_tools(&tools), chunk);
+            assert_eq!(calls.len(), 1, "chunk {chunk}");
+            assert_eq!(
+                calls[0].arguments,
+                json!({"text": "hand summer", "count": 17, "flag": true}),
+                "chunk {chunk}"
+            );
+        }
     }
 }

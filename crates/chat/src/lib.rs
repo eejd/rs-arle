@@ -380,3 +380,309 @@ pub fn openai_parse_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
     } = parse_tool_calls(text);
     (content, tool_calls)
 }
+
+/// The parameters a request's tool schemas declare `boolean`, by tool name.
+///
+/// Qwen's native tool-call XML spells every scalar the way Jinja's `string`
+/// filter does (its chat template renders arguments with `| string`), so a
+/// boolean is written `True` / `False`. That is not JSON:
+/// [`parse_tool_calls`] types the text from its own shape alone (it has no
+/// tool schema) and leaves `True` as the string `"True"`, while `17` and
+/// `true` become a number and a boolean. This type carries the schema's
+/// answer to the one place that can give it: a string argument of a
+/// parameter declared `boolean` whose text is `true` / `false` in any case
+/// becomes a JSON boolean. Nothing else is retyped, so a parameter declared
+/// `string` that holds the text `True` stays a string.
+#[derive(Debug, Clone, Default)]
+pub struct BooleanArguments {
+    by_tool: std::collections::HashMap<String, Vec<String>>,
+}
+
+impl BooleanArguments {
+    /// Collect the `boolean` parameters of `tools`: those whose schema, read
+    /// through `type`, `anyOf` / `oneOf` and local `$ref`s, accepts `boolean`
+    /// and not `string` (`null` aside), and has no branch that cannot be read.
+    /// `["boolean", "integer"]` counts; `["boolean", "string"]` is ambiguous
+    /// (the text `True` may be the answer) and does not.
+    pub fn from_tools(tools: &[OpenAiToolDefinition]) -> Self {
+        let mut by_tool = std::collections::HashMap::<String, Vec<String>>::new();
+        for tool in tools {
+            let Some(parameters) = tool.function.parameters.as_ref() else {
+                continue;
+            };
+            let Some(properties) = protocol::parameter_properties(parameters) else {
+                continue;
+            };
+            let names = properties
+                .iter()
+                .filter(|(_, schema)| declares_boolean(schema, parameters))
+                .map(|(name, _)| name.clone());
+            let mut names = names.peekable();
+            if names.peek().is_some() {
+                by_tool
+                    .entry(tool.function.name.clone())
+                    .or_default()
+                    .extend(names);
+            }
+        }
+        Self { by_tool }
+    }
+
+    /// Type the boolean parameters of one parsed call.
+    pub fn coerce(&self, call: &mut ToolCall) {
+        let Some(names) = self.by_tool.get(&call.name) else {
+            return;
+        };
+        let Some(arguments) = call.arguments.as_object_mut() else {
+            return;
+        };
+        for name in names {
+            if let Some(value) = arguments.get_mut(name)
+                && let Value::String(text) = value
+                && let Some(boolean) = spelled_boolean(text)
+            {
+                *value = Value::Bool(boolean);
+            }
+        }
+    }
+
+    /// Type the boolean parameters of every parsed call.
+    pub fn coerce_all(&self, calls: &mut [ToolCall]) {
+        for call in calls {
+            self.coerce(call);
+        }
+    }
+}
+
+fn declares_boolean(schema: &Value, root: &Value) -> bool {
+    let types = protocol::DeclaredTypes::of(schema, root);
+    types.boolean && !types.string && !types.unreadable
+}
+
+fn spelled_boolean(text: &str) -> Option<bool> {
+    let text = text.trim();
+    if text.eq_ignore_ascii_case("true") {
+        Some(true)
+    } else if text.eq_ignore_ascii_case("false") {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tool(name: &str, parameters: Value) -> OpenAiToolDefinition {
+        OpenAiToolDefinition {
+            tool_type: "function".into(),
+            function: OpenAiFunctionDefinition {
+                name: name.into(),
+                description: None,
+                parameters: Some(parameters),
+            },
+        }
+    }
+
+    fn echo_args() -> OpenAiToolDefinition {
+        tool(
+            "echo_args",
+            json!({"type": "object", "properties": {
+                "text": {"type": "string"},
+                "count": {"type": "integer"},
+                "flag": {"type": "boolean"},
+                "maybe": {"type": ["boolean", "null"]},
+                "label": {"type": ["boolean", "string"]},
+            }}),
+        )
+    }
+
+    // The tool block of the Qwen3.5 template, as the model writes it
+    // (quantbench tool_arg `scalars` case; the reference text of the engine run).
+    const QWEN_SCALARS: &str = "<tool_call>\n<function=echo_args>\n<parameter=text>\nhand summer\n</parameter>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n</function>\n</tool_call>";
+
+    #[test]
+    fn declared_boolean_parameters_become_booleans() {
+        let booleans = BooleanArguments::from_tools(&[echo_args()]);
+        let (_, mut calls) = openai_parse_tool_calls(QWEN_SCALARS);
+        booleans.coerce_all(&mut calls);
+        assert_eq!(
+            calls[0].arguments,
+            json!({"text": "hand summer", "count": 17, "flag": true})
+        );
+
+        let mut call = ToolCall::new(
+            "echo_args",
+            json!({"flag": "False", "maybe": " TRUE ", "count": 3}),
+        );
+        booleans.coerce(&mut call);
+        assert_eq!(
+            call.arguments,
+            json!({"flag": false, "maybe": true, "count": 3})
+        );
+    }
+
+    #[test]
+    fn only_declared_boolean_parameters_of_the_called_tool_are_retyped() {
+        let booleans = BooleanArguments::from_tools(&[echo_args()]);
+
+        // `text` is a string: the text `True` is the answer, not a boolean.
+        // `label` lists `string` beside `boolean`: ambiguous, stays text.
+        // Undeclared parameters keep what the parser made of them.
+        let mut call = ToolCall::new(
+            "echo_args",
+            json!({"text": "True", "label": "True", "extra": "True", "flag": "yes"}),
+        );
+        booleans.coerce(&mut call);
+        assert_eq!(
+            call.arguments,
+            json!({"text": "True", "label": "True", "extra": "True", "flag": "yes"})
+        );
+
+        // The same parameter name on another tool is not touched.
+        let mut other = ToolCall::new("other_tool", json!({"flag": "True"}));
+        booleans.coerce(&mut other);
+        assert_eq!(other.arguments, json!({"flag": "True"}));
+    }
+
+    #[test]
+    fn calls_without_an_object_of_arguments_or_a_schema_are_left_alone() {
+        let booleans = BooleanArguments::from_tools(&[
+            echo_args(),
+            tool("no_properties", json!({"type": "object"})),
+        ]);
+        let mut raw = ToolCall::new("echo_args", Value::String("flag=True".into()));
+        booleans.coerce(&mut raw);
+        assert_eq!(raw.arguments, Value::String("flag=True".into()));
+
+        let mut call = ToolCall::new("no_properties", json!({"flag": "True"}));
+        booleans.coerce(&mut call);
+        assert_eq!(call.arguments, json!({"flag": "True"}));
+
+        BooleanArguments::default().coerce(&mut call);
+        assert_eq!(call.arguments, json!({"flag": "True"}));
+    }
+
+    fn coerced(parameters: Value, arguments: Value) -> Value {
+        let booleans = BooleanArguments::from_tools(&[tool("t", parameters)]);
+        let mut call = ToolCall::new("t", arguments);
+        booleans.coerce(&mut call);
+        call.arguments
+    }
+
+    #[test]
+    fn nullable_and_referenced_boolean_schemas_are_read() {
+        let args = json!({
+            "opt": "True", "one": "false", "refd": "TRUE", "nested": "False",
+            "mixed": "True", "other": "True",
+        });
+        let parameters = json!({"type": "object", "properties": {
+            // pydantic `Optional[bool]`
+            "opt": {"anyOf": [{"type": "boolean"}, {"type": "null"}], "default": null},
+            "one": {"oneOf": [{"type": "boolean"}, {"type": "integer"}]},
+            "refd": {"$ref": "#/$defs/Flag"},
+            "nested": {"anyOf": [{"$ref": "#/$defs/Flag"}, {"type": "null"}]},
+            // ambiguous: the text `True` may be the answer
+            "mixed": {"anyOf": [{"type": "string"}, {"type": "boolean"}]},
+            "other": {"type": "integer"},
+        }, "$defs": {"Flag": {"type": "boolean", "title": "Flag"}}});
+        assert_eq!(
+            coerced(parameters, args),
+            json!({
+                "opt": true, "one": false, "refd": true, "nested": false,
+                "mixed": "True", "other": "True",
+            })
+        );
+    }
+
+    #[test]
+    fn a_parameters_object_behind_a_top_level_ref_is_read() {
+        let parameters = json!({
+            "$ref": "#/$defs/Args",
+            "$defs": {"Args": {"type": "object", "properties": {"flag": {"type": "boolean"}}}},
+        });
+        assert_eq!(
+            coerced(parameters, json!({"flag": "True"})),
+            json!({"flag": true})
+        );
+    }
+
+    #[test]
+    fn unreadable_schemas_are_left_untyped() {
+        let parameters = json!({"type": "object", "properties": {
+            "dangling": {"anyOf": [{"type": "boolean"}, {"$ref": "#/$defs/Missing"}]},
+            "remote": {"$ref": "https://example.com/flag.json"},
+            "open": {"anyOf": [{"type": "boolean"}, {}]},
+            "cycle": {"$ref": "#/properties/cycle"},
+            "bare": {"description": "no type at all"},
+        }});
+        let args = json!({
+            "dangling": "True", "remote": "True", "open": "True", "cycle": "True", "bare": "True"
+        });
+        assert_eq!(coerced(parameters, args.clone()), args);
+    }
+
+    #[test]
+    fn all_of_is_read_as_a_union_and_enum_is_not() {
+        let parameters = json!({"type": "object", "properties": {
+            // pydantic v1: a single `$ref` with siblings
+            "v1": {"allOf": [{"$ref": "#/definitions/Flag"}], "default": true},
+            // a constraint-only entry names no type
+            "constrained": {"allOf": [{"type": "boolean"}, {"description": "on or off"}]},
+            // a string entry makes it ambiguous
+            "strict": {"allOf": [{"type": "boolean"}, {"type": "string"}]},
+            // an `allOf` whose entries name no type at all
+            "untyped": {"allOf": [{"description": "x"}]},
+            "listed": {"enum": [true, false]},
+        }, "definitions": {"Flag": {"type": "boolean"}}});
+        let args = json!({
+            "v1": "True", "constrained": "False", "strict": "True", "untyped": "True",
+            "listed": "True",
+        });
+        assert_eq!(
+            coerced(parameters, args),
+            json!({
+                "v1": true, "constrained": false, "strict": "True", "untyped": "True",
+                "listed": "True",
+            })
+        );
+    }
+
+    #[test]
+    fn adversarial_schemas_end_unreadable_within_the_node_limit() {
+        // 400 branches, every one a `$ref` back to the definition itself.
+        let k = 400;
+        let selfref: Vec<Value> = (0..k).map(|_| json!({"$ref": "#/$defs/A"})).collect();
+        // Each level `anyOf`s twice into the next: 2^20 paths if expanded.
+        let mut defs = serde_json::Map::new();
+        for i in 0..20 {
+            let next = json!({"$ref": format!("#/$defs/D{}", i + 1)});
+            defs.insert(format!("D{i}"), json!({"anyOf": [next.clone(), next]}));
+        }
+        defs.insert("D20".into(), json!({"type": "boolean"}));
+        defs.insert("A".into(), json!({"anyOf": selfref}));
+        // 400 plain branches: wider than the limit, so unreadable too.
+        let wide: Vec<Value> = (0..k).map(|_| json!({"type": "boolean"})).collect();
+        let root = json!({"type": "object", "$defs": Value::Object(defs)});
+        for schema in [
+            json!({"$ref": "#/$defs/A"}),
+            json!({"$ref": "#/$defs/D0"}),
+            json!({"anyOf": wide}),
+        ] {
+            let types = protocol::DeclaredTypes::of(&schema, &root);
+            assert!(types.unreadable);
+            assert!(
+                types.nodes <= protocol::SCHEMA_NODE_LIMIT + 1,
+                "{} nodes",
+                types.nodes
+            );
+        }
+        // and a parameter with such a schema is left untyped
+        let args = json!({"a": "True", "d": "True"});
+        let parameters = json!({"type": "object", "properties": {
+            "a": {"$ref": "#/$defs/A"}, "d": {"$ref": "#/$defs/D0"},
+        }, "$defs": root["$defs"].clone()});
+        assert_eq!(coerced(parameters, args.clone()), args);
+    }
+}
