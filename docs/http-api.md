@@ -49,9 +49,14 @@ tiers still live in [docs/support-matrix.md](support-matrix.md) and
   `error.param` field.
 - Blank `prompt`, empty `messages`, and blank `input` are validated through the
   same structured `invalid_parameter` path.
-- `model` is optional on request bodies, but when present it must match the
-  currently served model reported by `GET /v1/models` (case-insensitive; final
-  path segment match allowed). Mismatches return `404 model_not_found`.
+- `model` is optional on request bodies and is not matched against the served
+  model: the process serves exactly one model, so any string is accepted
+  (benchmark and eval tooling passes a label). The id the server reports is the
+  one `GET /v1/models` lists, which is also the `model` of OpenAI-route
+  responses (`/v1/messages` echoes the request's own `model`, or this id when the
+  request has none). That id is `--served-model-name` when given; otherwise the
+  final segment of `--model-path`, or the repository name when the path is a
+  Hugging Face cache snapshot (`.../models--<org>--<name>/snapshots/<revision>`).
 - Streaming completions currently ignore OpenAI `stream_options`; usage is
   emitted on the terminal completion chunk.
 - Chat and responses validation is explicit: supported roles are `system`,

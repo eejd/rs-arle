@@ -8,6 +8,16 @@ detail in the linked wins/errors entry. Oldest sections are condensed.
 
 ## [Unreleased]
 
+### Serving
+
+- **`arle serve --served-model-name <NAME>`** sets the id `GET /v1/models` lists
+  and the `model` of responses (the flag SGLang and vLLM use for this). A
+  Hugging Face cache snapshot path, `.../models--<org>--<name>/snapshots/<revision>`,
+  is now named `<name>` by default instead of its 40-hex revision. The request's
+  own `model` field is still not matched; `docs/http-api.md` and
+  `docs/troubleshooting.md` no longer describe a `404 model_not_found` the
+  server stopped returning when the legacy `infer/` crate was deleted.
+
 ## [0.5.8] - 2026-08-21
 
 Two 4-bit checkpoint families now serve on CUDA, and the decode profile that
