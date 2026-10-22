@@ -85,6 +85,15 @@ Any string. The server routes every request to the single served model
 reported by `GET /v1/models`, so Claude Code's `claude-*` ids and the OpenAI
 SDK's `model="default"` both work. Omitting `model` is accepted too.
 
+### `GET /v1/models` lists a name I did not choose
+
+The id is the final segment of `--model-path` (the repo name for a Hugging Face
+cache snapshot). Name it with `--served-model-name`:
+
+```bash
+arle serve --model-path /models/Qwen3.5-4B-4bit --served-model-name qwen3.5-4b
+```
+
 ### Server is up but the first request hangs or returns 503
 
 `GET /health` answers as soon as the HTTP layer is bound; weight loading and

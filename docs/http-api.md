@@ -19,7 +19,7 @@ The router lives in `crates/infer-server/src/coordinator.rs` (`build_router`).
 | Generation | `POST /v1/messages` | Anthropic Messages surface: streaming events, `tools` / `tool_use` / `tool_result`, `thinking`. Any `model` string is accepted and routed to the served model, so Claude Code works with `ANTHROPIC_BASE_URL` alone. |
 | Generation | `POST /v1/messages/count_tokens` | Anthropic token count for a Messages request. |
 | Generation | `POST /v1/raw_logits` | Teacher logits for OPD. |
-| Discovery | `GET /v1/models` | The served model id. |
+| Discovery | `GET /v1/models` | The served model id: `--served-model-name`, else the final segment of `--model-path` (the repo name for a Hugging Face cache snapshot). |
 | Probes | `GET /health` | Liveness. |
 | Operations | `GET /metrics` | Prometheus metrics. |
 | Operations | `GET /v1/stats` | Runtime stats: scheduler, prefix cache, KV tiers. |
@@ -48,7 +48,8 @@ The router lives in `crates/infer-server/src/coordinator.rs` (`build_router`).
 - Blank `prompt`, empty `messages`, and blank `input` are validated through the
   same structured `invalid_parameter` path.
 - `model` is optional on request bodies and is treated as a label: every request
-  is routed to the single served model reported by `GET /v1/models`.
+  is routed to the single served model reported by `GET /v1/models`. Responses
+  carry that id as `model` (`/v1/messages` echoes the request's own `model`).
 - Chat validation is explicit: supported roles are `system`,
   `user`, `assistant`, and `tool`; `content` part arrays must be text-only.
 - Tool definitions must use `type=function`; malformed assistant `tool_calls`
