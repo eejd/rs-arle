@@ -1609,3 +1609,38 @@ mod capability_tests {
         );
     }
 }
+
+#[cfg(test)]
+mod served_model_id_tests {
+    use super::EngineLoadConfig;
+
+    fn config(name: Option<&str>) -> EngineLoadConfig {
+        EngineLoadConfig {
+            served_model_name: name.map(str::to_owned),
+            ..EngineLoadConfig::default()
+        }
+    }
+
+    #[test]
+    fn the_served_name_wins_over_the_id_derived_from_the_path() {
+        assert_eq!(
+            config(Some("qwen")).served_model_id("Qwen3-4B".into()),
+            "qwen"
+        );
+        assert_eq!(
+            config(Some(" qwen ")).served_model_id("Qwen3-4B".into()),
+            "qwen"
+        );
+    }
+
+    #[test]
+    fn without_a_usable_name_the_derived_id_is_kept() {
+        for name in [None, Some(""), Some("   ")] {
+            assert_eq!(
+                config(name).served_model_id("Qwen3-4B".into()),
+                "Qwen3-4B",
+                "{name:?}"
+            );
+        }
+    }
+}
