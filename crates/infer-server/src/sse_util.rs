@@ -294,10 +294,10 @@ pub(crate) struct StreamPipeline {
 }
 
 impl StreamPipeline {
-    pub(crate) fn new(thinking: bool, tools_active: bool) -> Self {
+    pub(crate) fn new(thinking: bool, tools_active: bool, schemas: chat::ToolSchemas) -> Self {
         Self {
             splitter: StreamingReasoningSplitter::new(thinking),
-            tool_stream: tools_active.then(chat::StreamingToolCalls::default),
+            tool_stream: tools_active.then(|| chat::StreamingToolCalls::new(schemas)),
         }
     }
 
@@ -350,5 +350,61 @@ impl StreamPipeline {
             }
         }
         (deltas, calls)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn echo_args_tools() -> Vec<chat::OpenAiToolDefinition> {
+        vec![chat::OpenAiToolDefinition {
+            tool_type: "function".into(),
+            function: chat::OpenAiFunctionDefinition {
+                name: "echo_args".into(),
+                description: None,
+                parameters: Some(json!({"type": "object", "properties": {
+                    "text": {"type": "string"},
+                    "count": {"type": "integer"},
+                    "flag": {"type": "boolean"},
+                    "zip": {"type": "string"},
+                    "note": {"type": "string"},
+                }})),
+            },
+        }]
+    }
+
+    // A Qwen3.5 tool call as the model writes it (the quantbench `scalars`
+    // case): the template renders non-container scalars with Jinja's `string`
+    // filter, so the boolean is `True`.
+    const QWEN_CALL: &str = "<tool_call>\n<function=echo_args>\n<parameter=text>\nhand summer\n</parameter>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n<parameter=zip>\n12345\n</parameter>\n<parameter=note>\nnull\n</parameter>\n<parameter=extra>\n5\n</parameter>\n</function>\n</tool_call>";
+
+    fn stream_calls(schemas: chat::ToolSchemas, chunk: usize) -> Vec<chat::ToolCall> {
+        let mut pipeline = StreamPipeline::new(false, true, schemas);
+        let chars: Vec<char> = QWEN_CALL.chars().collect();
+        let mut calls = Vec::new();
+        for piece in chars.chunks(chunk) {
+            calls.extend(pipeline.push(&piece.iter().collect::<String>()).1);
+        }
+        calls.extend(pipeline.finish().1);
+        calls
+    }
+
+    #[test]
+    fn streamed_arguments_are_typed_by_the_schema_whatever_the_chunking() {
+        let tools = echo_args_tools();
+        for chunk in [1, 7, QWEN_CALL.len()] {
+            let calls = stream_calls(chat::ToolSchemas::from_openai(&tools), chunk);
+            assert_eq!(calls.len(), 1, "chunk {chunk}");
+            assert_eq!(
+                calls[0].arguments,
+                json!({
+                    "text": "hand summer", "count": 17, "flag": true,
+                    "zip": "12345", "note": "null", "extra": 5
+                }),
+                "chunk {chunk}"
+            );
+        }
     }
 }

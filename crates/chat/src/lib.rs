@@ -12,7 +12,7 @@ pub mod protocol;
 
 pub use protocol::{
     ChatMessage, ChatMlSpan, ChatRole, ParsedAssistantResponse, RenderedChatMl, StreamingToolCalls,
-    ToolCall, ToolChoiceMode, ToolDefinition, VisibleTextStream, messages_to_prompt,
+    ToolCall, ToolChoiceMode, ToolDefinition, ToolSchemas, VisibleTextStream, messages_to_prompt,
     parse_tool_calls, render_structured_chatml_with_spans,
 };
 
@@ -353,10 +353,25 @@ fn render_deepseek_v4_tool_arguments(arguments: &str) -> String {
 
 /// Returns `(visible_content, tool_calls)` where `visible_content` has the
 /// tool call blocks and `<think>` blocks stripped.
-pub fn openai_parse_tool_calls(text: &str) -> (String, Vec<ToolCall>) {
+///
+/// `schemas` types each `<parameter=...>` value by the request's tool
+/// definitions where they declare it (see [`ToolSchemas`]).
+pub fn openai_parse_tool_calls(text: &str, schemas: &ToolSchemas) -> (String, Vec<ToolCall>) {
     let ParsedAssistantResponse {
         content,
         tool_calls,
-    } = parse_tool_calls(text);
+    } = parse_tool_calls(text, schemas);
     (content, tool_calls)
+}
+
+impl ToolSchemas {
+    /// The schemas of a request's OpenAI-format tool definitions.
+    pub fn from_openai(tools: &[OpenAiToolDefinition]) -> Self {
+        Self::from_parameters(tools.iter().filter_map(|tool| {
+            tool.function
+                .parameters
+                .as_ref()
+                .map(|parameters| (tool.function.name.as_str(), parameters))
+        }))
+    }
 }
