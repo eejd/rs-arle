@@ -166,6 +166,11 @@ pub struct EngineLoadConfig {
     /// `MultiAxisConfig` via `TpEnvGuard`.
     #[serde(default)]
     pub context_parallel_size: Option<usize>,
+    /// `--served-model-name`: the id `GET /v1/models` lists and responses carry
+    /// as `model`. `None` = derived from the model path
+    /// ([`crate::serve_engine::model_id_from_path`]).
+    #[serde(default)]
+    pub served_model_name: Option<String>,
 }
 
 fn default_dspark_sps_bias_ms() -> f32 {
@@ -242,11 +247,24 @@ impl Default for EngineLoadConfig {
             vulkan_submit_cap: None,
             world_size: None,
             context_parallel_size: None,
+            served_model_name: None,
         }
     }
 }
 
 impl EngineLoadConfig {
+    /// The id the HTTP surface serves the model under: `--served-model-name`
+    /// when given (and not blank), else `derived` (the id taken from the model
+    /// path). Every backend router names its model through this.
+    #[allow(dead_code)]
+    pub(crate) fn served_model_id(&self, derived: String) -> String {
+        self.served_model_name
+            .as_deref()
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+            .map_or(derived, str::to_owned)
+    }
+
     // All callsites are under cfg(feature = "cuda"/"metal"/"hip"/"vulkan");
     // the cpu-only CI surface compiles none of them.
     // A set `--max-running-requests` IS the executor slot budget: the scheduler
@@ -1557,7 +1575,7 @@ mod backend {
             return Ok(infer_server::coordinator_local_router(
                 Arc::new(serve),
                 tokenizer,
-                model_id,
+                config.served_model_id(model_id),
                 config.max_thinking_tokens,
                 Some(infer_plan::MultimodalKind::Gemma4),
             ));
@@ -1568,7 +1586,7 @@ mod backend {
             return Ok(infer_server::coordinator_local_router(
                 Arc::new(serve),
                 tokenizer,
-                model_id,
+                config.served_model_id(model_id),
                 config.max_thinking_tokens,
                 Some(infer_plan::MultimodalKind::Gemma4),
             ));
@@ -1579,7 +1597,7 @@ mod backend {
             return Ok(infer_server::coordinator_local_router(
                 Arc::new(serve),
                 tokenizer,
-                model_id,
+                config.served_model_id(model_id),
                 config.max_thinking_tokens,
                 Some(infer_plan::MultimodalKind::DeepseekOcr),
             ));
@@ -1588,7 +1606,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2567,7 +2585,7 @@ mod backend {
         let router = infer_server::coordinator_local_router(
             serve_arc,
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         )
@@ -2733,7 +2751,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2752,7 +2770,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2792,7 +2810,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2975,3 +2993,114 @@ pub use backend::cuda_model_takes_multiproc_serve;
     feature = "cpu"
 ))]
 pub(crate) use backend::router_for_backend;
+
+#[cfg(test)]
+mod served_model_id_tests {
+    use super::EngineLoadConfig;
+
+    fn config(name: Option<&str>) -> EngineLoadConfig {
+        EngineLoadConfig {
+            served_model_name: name.map(str::to_owned),
+            ..EngineLoadConfig::default()
+        }
+    }
+
+    #[test]
+    fn the_served_name_wins_over_the_id_derived_from_the_path() {
+        assert_eq!(
+            config(Some("qwen")).served_model_id("Qwen3-4B".into()),
+            "qwen"
+        );
+        assert_eq!(
+            config(Some(" qwen ")).served_model_id("Qwen3-4B".into()),
+            "qwen"
+        );
+    }
+
+    #[test]
+    fn without_a_usable_name_the_derived_id_is_kept() {
+        for name in [None, Some(""), Some("   ")] {
+            assert_eq!(
+                config(name).served_model_id("Qwen3-4B".into()),
+                "Qwen3-4B",
+                "{name:?}"
+            );
+        }
+    }
+}
+
+/// The name reaches the listing through the real router of the backend this
+/// build compiles (the CPU one: no GPU, no weights, a minimal tokenizer).
+#[cfg(all(
+    test,
+    feature = "cpu",
+    not(feature = "metal"),
+    not(feature = "cuda"),
+    not(feature = "hip"),
+    not(feature = "vulkan")
+))]
+mod served_model_router_tests {
+    use std::io::{Read, Write};
+
+    use super::EngineLoadConfig;
+
+    const TOKENIZER: &str = r#"{"version":"1.0","truncation":null,"padding":null,"added_tokens":[],
+        "normalizer":null,"pre_tokenizer":{"type":"Whitespace"},"post_processor":null,"decoder":null,
+        "model":{"type":"WordLevel","vocab":{"[UNK]":0,"hello":1},"unk_token":"[UNK]"}}"#;
+
+    /// `GET /v1/models` of the router built for `model_path`, as the listed ids.
+    fn listed_ids(model_path: &str, served_model_name: Option<&str>) -> Vec<String> {
+        let config = EngineLoadConfig {
+            served_model_name: served_model_name.map(str::to_owned),
+            ..EngineLoadConfig::default()
+        };
+        let shutdown = infer_server::ServeShutdown::new();
+        let (router, _engine) =
+            super::router_for_backend(model_path, false, config, shutdown.clone())
+                .expect("the cpu router builds");
+        let rt = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .expect("tokio runtime");
+        let ids = rt.block_on(async {
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let addr = listener.local_addr().unwrap();
+            tokio::spawn(async move { axum::serve(listener, router).await });
+            tokio::task::spawn_blocking(move || {
+                let mut stream = std::net::TcpStream::connect(addr).unwrap();
+                stream
+                    .write_all(b"GET /v1/models HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n")
+                    .unwrap();
+                let mut response = String::new();
+                stream.read_to_string(&mut response).unwrap();
+                let body = response.split_once("\r\n\r\n").expect("http response").1;
+                let json: serde_json::Value = serde_json::from_str(body.trim()).expect(body);
+                json["data"]
+                    .as_array()
+                    .expect("data array")
+                    .iter()
+                    .map(|card| card["id"].as_str().expect("id").to_owned())
+                    .collect()
+            })
+            .await
+            .unwrap()
+        });
+        shutdown.request();
+        ids
+    }
+
+    #[test]
+    fn v1_models_lists_the_served_name_else_the_id_from_the_path() {
+        let dir = tempfile::tempdir().unwrap();
+        // a hub cache snapshot: the directory name is a revision hash
+        let snapshot = dir
+            .path()
+            .join("models--acme--Tiny-4bit/snapshots/0e7ffd5c629ef7719d4cbc04069232580bfa9d9c");
+        std::fs::create_dir_all(&snapshot).unwrap();
+        std::fs::write(snapshot.join("tokenizer.json"), TOKENIZER).unwrap();
+        let path = snapshot.to_str().unwrap();
+
+        assert_eq!(listed_ids(path, Some("tiny")), ["tiny"]);
+        assert_eq!(listed_ids(path, None), ["Tiny-4bit"]);
+    }
+}

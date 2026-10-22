@@ -79,18 +79,20 @@ You built without selecting a backend feature. Rebuild with one of `cuda` /
 Same root cause as the `bare` doctor message — backend feature was not
 compiled in. Pass the matching `--features` flag at build time.
 
-### `Model 'qwen3.5-4b' is not available on this server; loaded model is 'Qwen3.5-0.8B-MLX-4bit'`
+### `GET /v1/models` lists a name I did not choose
 
-The server matches the request body's `model` field (case-insensitive, last
-path segment) against the loaded model's id. Either:
+The id is the final segment of `--model-path` (the repository name for a
+Hugging Face cache snapshot). Name it yourself with `--served-model-name`:
 
-1. Match the loaded model name in your client request, or
-2. Use [`examples/openai_chat.py`](../examples/openai_chat.py), which lists
-   `/v1/models` first and uses whatever the server reports, or
-3. Set `ARLE_MODEL=<id>` to override the default in the example.
+```bash
+arle serve --model-path /models/Qwen3.5-4B-4bit --served-model-name qwen3.5-4b
+```
 
-Note: omitting the `model` field entirely is also accepted — the server uses
-the loaded model.
+`/v1/models` then lists `qwen3.5-4b` and responses carry it as `model`. A
+request's own `model` field is not matched against it (the process serves one
+model), so a client that sends another name still gets the loaded model;
+[`examples/openai_chat.py`](../examples/openai_chat.py) reads the id from
+`/v1/models`.
 
 ### Server starts but `/healthz` is fine and `/readyz` is 503
 

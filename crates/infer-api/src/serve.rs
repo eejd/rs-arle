@@ -304,11 +304,15 @@ pub fn serve_coordinator_http_dp(
     bind: &str,
     port: u16,
     max_thinking_tokens: usize,
+    served_model_name: Option<&str>,
     relays: Vec<infer_server::RelayCoordinator>,
 ) -> Result<()> {
     let tokenizer = infer_server::OpenAiTokenizer::from_model_dir(model_path)
         .with_context(|| format!("coordinator tokenizer load for {model_path}"))?;
-    let model_id = crate::serve_engine::model_id_from_path(model_path);
+    let model_id = served_model_name.map_or_else(
+        || crate::serve_engine::model_id_from_path(model_path),
+        str::to_owned,
+    );
     let shutdown = infer_server::ServeShutdown::new();
     let router = infer_server::dp_coordinator_router(
         relays,
