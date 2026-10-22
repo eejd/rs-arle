@@ -88,8 +88,8 @@ fn format_prompt(messages: &[Message], tools: &[ToolDefinition]) -> String {
     chat::messages_to_prompt(messages, tools)
 }
 
-fn parse_tool_calls(text: &str) -> ParsedAssistantResponse {
-    let mut parsed = chat::parse_tool_calls(text);
+fn parse_tool_calls(text: &str, tools: &[ToolDefinition]) -> ParsedAssistantResponse {
+    let mut parsed = chat::parse_tool_calls(text, &chat::ToolSchemas::from_definitions(tools));
     parsed
         .tool_calls
         .retain(|call| !call.name.trim().is_empty());
@@ -662,7 +662,7 @@ impl AgentSession {
                     finish_reason: finish_reason_to_str(output.finish_reason).to_string(),
                 });
 
-                let mut parsed = parse_tool_calls(&output.text);
+                let mut parsed = parse_tool_calls(&output.text, tools);
                 if parsed.tool_calls.is_empty() && tool_calls_executed == 0 && !tools.is_empty() {
                     if let Some(recovered) =
                         tool_policy.recover_tool_calls_from_draft(&output.text, tools)
@@ -1177,7 +1177,7 @@ If no tool is needed, output exactly NO_TOOL.",
     };
     let decode_secs = started_at.elapsed().as_secs_f64();
 
-    let repaired = parse_tool_calls(&repair_output.text);
+    let repaired = parse_tool_calls(&repair_output.text, tools);
     let record = SubTurnRecord {
         index: sub_turn_index,
         prompt_text: Some(repair_prompt),
@@ -1308,4 +1308,31 @@ fn complete_with_optional_cancel<E: InferenceEngine + ?Sized>(
         prompt_token_ids,
         response_token_ids,
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn agent_parse_types_arguments_by_the_declared_tool_parameters() {
+        let tools = [ToolDefinition::new(
+            "echo_args",
+            "",
+            json!({"type": "object", "properties": {
+                "zip": {"type": "string"},
+                "count": {"type": "integer"},
+                "flag": {"type": "boolean"},
+            }}),
+        )];
+        let text = "<tool_call>\n<function=echo_args>\n<parameter=zip>\n12345\n</parameter>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n</function>\n</tool_call>";
+
+        let parsed = parse_tool_calls(text, &tools);
+        assert_eq!(parsed.tool_calls.len(), 1);
+        assert_eq!(
+            parsed.tool_calls[0].arguments,
+            json!({"zip": "12345", "count": 17, "flag": true})
+        );
+    }
 }
