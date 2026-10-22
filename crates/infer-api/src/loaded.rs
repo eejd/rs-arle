@@ -166,6 +166,11 @@ pub struct EngineLoadConfig {
     /// `MultiAxisConfig` via `TpEnvGuard`.
     #[serde(default)]
     pub context_parallel_size: Option<usize>,
+    /// `--served-model-name`: the id `GET /v1/models` lists and responses carry
+    /// as `model`. `None` = derived from the model path
+    /// ([`crate::serve_engine::model_id_from_path`]).
+    #[serde(default)]
+    pub served_model_name: Option<String>,
 }
 
 fn default_dspark_sps_bias_ms() -> f32 {
@@ -242,11 +247,19 @@ impl Default for EngineLoadConfig {
             vulkan_submit_cap: None,
             world_size: None,
             context_parallel_size: None,
+            served_model_name: None,
         }
     }
 }
 
 impl EngineLoadConfig {
+    /// The id the HTTP surface serves the model under: `--served-model-name`
+    /// when given, else `derived` (the id taken from the model path).
+    #[allow(dead_code)]
+    pub(crate) fn served_model_id(&self, derived: String) -> String {
+        self.served_model_name.clone().unwrap_or(derived)
+    }
+
     // All callsites are under cfg(feature = "cuda"/"metal"/"hip"/"vulkan");
     // the cpu-only CI surface compiles none of them.
     // A set `--max-running-requests` IS the executor slot budget: the scheduler
@@ -1557,7 +1570,7 @@ mod backend {
             return Ok(infer_server::coordinator_local_router(
                 Arc::new(serve),
                 tokenizer,
-                model_id,
+                config.served_model_id(model_id),
                 config.max_thinking_tokens,
                 Some(infer_plan::MultimodalKind::Gemma4),
             ));
@@ -1568,7 +1581,7 @@ mod backend {
             return Ok(infer_server::coordinator_local_router(
                 Arc::new(serve),
                 tokenizer,
-                model_id,
+                config.served_model_id(model_id),
                 config.max_thinking_tokens,
                 Some(infer_plan::MultimodalKind::Gemma4),
             ));
@@ -1579,7 +1592,7 @@ mod backend {
             return Ok(infer_server::coordinator_local_router(
                 Arc::new(serve),
                 tokenizer,
-                model_id,
+                config.served_model_id(model_id),
                 config.max_thinking_tokens,
                 Some(infer_plan::MultimodalKind::DeepseekOcr),
             ));
@@ -1588,7 +1601,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2567,7 +2580,7 @@ mod backend {
         let router = infer_server::coordinator_local_router(
             serve_arc,
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         )
@@ -2733,7 +2746,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2752,7 +2765,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
@@ -2792,7 +2805,7 @@ mod backend {
         Ok(infer_server::coordinator_local_router(
             Arc::new(serve),
             tokenizer,
-            model_id,
+            config.served_model_id(model_id),
             config.max_thinking_tokens,
             None,
         ))
