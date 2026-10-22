@@ -35,17 +35,17 @@ None.
 
 ## Topic branches
 
-Both topics are merged into `local` with `--no-ff` (`Merge topic/<name> into local (#N)`). Nothing
-here is posted to `acupof-ai/arle` before the quantbench + agentbench soak (ADR-0008); neither topic
-has an upstream PR yet. Neither was rebased onto upstream `main` (`af5fa54`, 1104 commits past the
-base): both touch `crates/infer-server/src/coordinator.rs`, where a rebase needs a textual
-resolution (#4's PR body measured two trivial hunks for its first commit and did not re-check the
-later ones).
+Topics are merged into `local` with `--no-ff` (`Merge topic/<name> into local (#N)`); the first two
+are merged, `topic/served-model-name` is a draft PR. Nothing here is posted to `acupof-ai/arle`
+before the quantbench + agentbench soak (ADR-0008); no topic has an upstream PR. The topics are
+branched from the base (`5caecf6a1`), not from upstream `main` (`af5fa54`, 1104 commits past it);
+"Upstreaming plan" below records how each applies there.
 
 | Topic branch | Merged | What | Origin | Upstream status |
 |---|---|---|---|---|
 | `topic/boolean-tool-arguments` (head `7c489ba38`) | eejd/rs-arle#4, merge `3d0640e64`; fixes #1 | Qwen3.5 writes a boolean tool argument as Python `True`/`False` (its chat template renders non-container arguments with Jinja's `string` filter), which the server returned as the string `"True"` (quantbench `tool_arg` 16/20). `chat::BooleanArguments` retyped string arguments of declared-boolean parameters after the parse (schema read through `type`, `anyOf`/`oneOf`/`allOf` and local `$ref`, node limit 128, depth 8). Touches `crates/chat`, `crates/infer-server`. **Superseded in code by the next row:** `BooleanArguments` no longer exists on `local` (`git grep BooleanArguments` is empty); the merge stays in history and #5 keeps #4's schema walker. | authored here (eejd/rs-arle#1 has the evidence) | not-submitted |
 | `topic/schema-typed-arguments` (head `f2b0ed4a0`, stacked on `topic/boolean-tool-arguments`) | eejd/rs-arle#5, merge `af29d047a`; fixes #2 (and #1 again, in the parse) | Tool-call arguments are typed by the request's tool schema inside the parse: `chat::ToolSchemas` (parameters declared `string` or `boolean`) is passed into `parse_tool_calls`, `openai_parse_tool_calls`, `StreamingToolCalls::new` and `parse_native_function_block`. A declared `string` parameter keeps its exact text (`12345`, `3.50`, `1e3`, `true`, `null` were returned as number/boolean/null), a declared `boolean` accepts `true`/`false` in any case (`True`); everything else is typed as before. All callers migrated (`infer-server` OpenAI and Anthropic, stream and non-stream; the `arle run` agent in `crates/agent`). Touches `crates/chat`, `crates/infer-server`, `crates/agent`. Subsumes #4's post-pass. The merge also brings `docs/evidence/live-2026-10-20/` (the live probe scripts and results of #1, #2, #4 and #5, scrubbed of host paths and names; README there). Live, Qwen3.5-4B-4bit, 4 API paths: `tool_arg` 20/20 (installed 0.5.8: 16/20) and `strnum` 6/6 (installed 0.5.8: 0/6). | authored here (eejd/rs-arle#2) | not-submitted; the evidence commit `f2b0ed4a0` is to be dropped when cutting the topic for upstream |
+| `topic/served-model-name` (3 commits: `fix(infer-api)` hub cache snapshot id, `feat(serve)` `--served-model-name`, `docs(serve)`) | draft eejd/rs-arle#8; fixes #7 | `GET /v1/models` listed `0e7ffd5c...` for Qwen3.5-4B-4bit: the served id is the final segment of `--model-path`, which for a Hugging Face cache snapshot (`.../models--<org>--<name>/snapshots/<revision>`) is the 40-hex revision, and nothing could name it. `arle serve --served-model-name <NAME>` sets the id `/v1/models` lists and responses carry as `model` (all `router_*` backends and the CUDA multi-group coordinator); the default id is unchanged except that a hub cache snapshot is named by its repo `<name>`. The request's own `model` stays unmatched (accept-any: the repo's tooling and `cc_harness` depend on it; `docs/http-api.md` and `docs/troubleshooting.md` described a `404 model_not_found` the server lost when the legacy `infer/` crate was deleted in `7adabec86`, and are corrected). Touches `crates/cli` (`args.rs`, `serve.rs`), `crates/infer-api` (`loaded.rs`, `serve.rs`, `serve_engine.rs`), docs, `CHANGELOG.md`. | authored here (root cause: rs-arle#7) | not-submitted; the quantbench registry follows it (`served_id = "flag"`, py-quantbench draft) |
 
 ## Tags
 
@@ -58,3 +58,50 @@ The version a build of this fork reports (`arle --doctor`, the `version` field o
 `arle --version` does not exist in 0.5.8. The port stamps `0.5.8+local01` into `crates/cli/Cargo.toml`
 and `Cargo.lock` at build time (docs/development-model.md, "Version strings of `-local` builds");
 there is no stamp commit here, so a build made from the fork alone reports `0.5.8`.
+
+## Upstreaming plan
+
+Preparation only. **Nothing is sent to `acupof-ai/arle`** (no issue, no PR, no push) until the topics have
+soaked in production under quantbench **and** agentbench (eejd/py-quantbench#220) and have had an
+independent review; ADR-0008 forbids upstream contact before that. Each candidate below has a prep branch
+on this fork, `prep/upstream-<topic>`, cut on upstream `main` at `af5fa54cd` (2026-09-24, the head when the
+fork was created and still on 2026-10-22), so that "applies and passes there" is measured, not assumed. The
+prep branches are cuts for the future PR, not the fork's own history (they are not merged into `local`); they
+carry no `UPSTREAM.md`, no evidence directory and nothing that names this fork.
+
+| Candidate | Upstream cut | Prep branch (tip, commits) | Size vs upstream `main` | Rebase from `local` |
+|---|---|---|---|---|
+| Tool-call argument typing | One PR: the net result of `topic/boolean-tool-arguments` (#4) and `topic/schema-typed-arguments` (#5). #4's intermediate `BooleanArguments` post-pass is not sent: #5 replaces it and keeps #4's schema walker. | `prep/upstream-schema-typed-arguments` (`5548ca4fb`, 1 commit, `fix(chat): type tool-call arguments by the request's tool schema`) | 6 files, +680/-49 (about 340 of the added lines are tests) | Applies with a 3-way merge and **3 files in conflict, resolved by hand**: `crates/chat/src/lib.rs` (upstream's dead-code sweep shortened the `pub use protocol::{..}` list: only `ToolSchemas` is added to it), `crates/chat/src/tool.rs` (upstream dropped the restating doc comments; the new block is placed next to them without the restating lines), `crates/infer-server/src/coordinator.rs` (two hunks: a line added next to upstream's `let think_open = reasoning_seed(..)`, and the new test module beside `dp_failure_domain_tests`). |
+| `--served-model-name` | One PR of three commits (the series is already one commit per concern). | `prep/upstream-served-model-name` (`683a3af52`, 3 commits) | 8 files, +161/-6 | Not a textual rebase: upstream replaced the per-backend `router_*` functions with a registry and one `router_for_backend`, so the 8 `config.served_model_id(model_id)` sites of the `local` version collapse to **one line** after `build(..)`, and `model_id_from_path` is already `pub`. Two docs hunks (`docs/http-api.md`, `docs/troubleshooting.md`) are smaller there: upstream already documents "any string" for `model`, so the correction of the stale `404 model_not_found` text is not part of the upstream cut. |
+
+**Checked on the prep branches** (2026-10-22, MacPorts Rust 1.99.0; upstream `main` pins 1.98.0 in `rust-toolchain.toml`, so the lint
+result is close to but not the CI's; re-run on 1.98.0 before sending), no `port` command, `RUSTC_WRAPPER=` empty:
+
+| | prep tool-argument typing | prep served-model-name |
+|---|---|---|
+| tests | `cargo test -p chat -p infer-server -p agent`: chat 5, infer-server 42, agent 1: all pass | upstream `ci.yml` backend lane, `cargo test -p infer-api -p arle -p cli --profile release-fast --no-default-features --features cpu,no-cuda,cli`: all pass, including the 3 `served_model_name` and 3 `model_id` tests added |
+| lint | `cargo clippy -p chat -p infer-server -p agent --all-targets`: no warning | the three CPU lanes of `ci.yml` with `-D warnings` (`-p infer-api .. --features no-cuda --lib`, `-p cli .. --features no-cuda`, `-p arle .. --features cpu,no-cuda,cli --bin arle`): clean. The CUDA lanes (`cuda,no-cuda,nccl,deepep`) were typechecked on the `local` version of the topic only (`CUDARC_CUDA_VERSION=12080`), not on the prep branch |
+| format | `rustfmt --check` on the touched files: clean | same |
+| behaviour | live checks of the `local` versions (see the topic rows); not re-run on the prep branches | same |
+
+**Prerequisites before any upstream contact** (each is open until it is ticked in this file):
+
+1. Production soak: quantbench **and** agentbench (py-quantbench#220) on a deployed `arle-local` that carries the topic.
+2. Independent review of the series as it will be sent (the fork's own reviews covered the `local` versions).
+3. Rebase onto the then-current upstream `main` (it moves; the prep branches are dated above), re-run the table above, re-run
+   `clippy` on the pinned toolchain.
+4. Conventions read from upstream's `CONTRIBUTING.md` and `.github/` on `main`: Commitizen messages (`<type>(<scope>): <subject>`),
+   one logical change per PR, docs updated in the same PR for a CLI change (`docs/http-api.md`, `docs/troubleshooting.md`,
+   `CHANGELOG.md` `## [Unreleased]`), the PR template (surface area, stability/compatibility, docs updated, validation, benchmark
+   evidence: "No performance claim" for both candidates), CI = `ci.yml` (fmt scoped to changed files, clippy `-D warnings` CPU and
+   `cuda,no-cuda` lanes, `cargo test` backend and device-neutral lanes), `metal-ci.yml` (macos-14: `cargo test -p infer-api -p cli -p arle`)
+   and `cargo deny`. Upstream `main` no longer has `scripts/check_repo_hygiene.py` that the template and `v0.5.8` mention.
+5. Licence and sign-off: the repo is MIT (`LICENSE`, "Copyright (c) 2026 cklxx"); no CLA, DCO or `Signed-off-by` requirement appears in
+   `CONTRIBUTING.md`, `README.md` or `.github/` (searched 2026-10-22); `.github/CODEOWNERS` assigns everything to `@cklxx`.
+   The commit author on the prep branches is `Eric DeWitt <edewitt@mac.com>`; whether that is the identity for the public record is the
+   owner's call.
+6. PR texts for upstream are written from scratch in upstream's terms: no fork issue numbers, no `eejd`, no MacPorts or host details;
+   the measurements restated (tool_arg 16/20 -> 20/20 with the string-typed cases 0/6 -> 6/6; `/v1/models` listing the revision
+   hash -> the named id) with their commands.
+7. Questions to put to the maintainers with the PRs, not decided here: whether they want the request `model` matched
+   (the fork keeps accept-any, which their docs on `main` state), and the flag spelling `--served-model-name` (SGLang's and vLLM's).
