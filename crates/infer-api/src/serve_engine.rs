@@ -617,11 +617,85 @@ fn deliverable_delta(full: &str, emitted: &str, holdback: usize) -> Option<Strin
 }
 
 /// Derive a model id from the final path segment of a model path or HF id.
+/// A Hugging Face hub cache snapshot (`.../models--<org>--<name>/snapshots/<revision>`)
+/// ends in the revision hash, so it is named by its repository's `<name>` instead.
 #[must_use]
 pub fn model_id_from_path(model_path: &str) -> String {
-    std::path::Path::new(model_path)
-        .file_name()
-        .and_then(|name| name.to_str())
+    let path = std::path::Path::new(model_path);
+    hf_cache_repo_name(path)
+        .or_else(|| path.file_name().and_then(|name| name.to_str()))
         .unwrap_or(model_path)
         .to_string()
+}
+
+/// `<name>` of a hub cache snapshot directory, `None` for any other path.
+///
+/// `huggingface_hub` stores repo `<org>/<name>` as `models--<org>--<name>` (a
+/// repo without an organisation as `models--<name>`) and never allows `--` in a
+/// repo name, so the text after the last `--` is the repo's own name.
+fn hf_cache_repo_name(snapshot: &std::path::Path) -> Option<&str> {
+    let snapshots = snapshot.parent()?;
+    if snapshots.file_name()? != "snapshots" {
+        return None;
+    }
+    let repo_dir = snapshots.parent()?.file_name()?.to_str()?;
+    let repo = repo_dir.strip_prefix("models--")?;
+    repo.rsplit("--").next().filter(|name| !name.is_empty())
+}
+
+#[cfg(test)]
+mod model_id_tests {
+    use super::model_id_from_path;
+
+    #[test]
+    fn plain_paths_and_repo_ids_keep_their_final_segment() {
+        assert_eq!(model_id_from_path("/models/Qwen3-4B"), "Qwen3-4B");
+        assert_eq!(model_id_from_path("/models/Qwen3-4B/"), "Qwen3-4B");
+        assert_eq!(
+            model_id_from_path("mlx-community/Qwen3-0.6B-4bit"),
+            "Qwen3-0.6B-4bit"
+        );
+        assert_eq!(model_id_from_path("Qwen3-4B"), "Qwen3-4B");
+    }
+
+    #[test]
+    fn a_hub_cache_snapshot_is_named_by_its_repo_not_its_revision() {
+        let rev = "0123456789abcdef0123456789abcdef01234567";
+        let repo = "/cache/hub/models--mlx-community--Qwen3.5-4B-4bit";
+        assert_eq!(
+            model_id_from_path(&format!("{repo}/snapshots/{rev}")),
+            "Qwen3.5-4B-4bit"
+        );
+        assert_eq!(
+            model_id_from_path(&format!("{repo}/snapshots/{rev}/")),
+            "Qwen3.5-4B-4bit"
+        );
+        // a repo without an organisation
+        assert_eq!(
+            model_id_from_path(&format!("/cache/models--gpt2/snapshots/{rev}")),
+            "gpt2"
+        );
+    }
+
+    #[test]
+    fn only_the_hub_layout_is_reinterpreted() {
+        // `snapshots/<x>` outside a `models--*` repo directory, a dataset
+        // cache, and a model directory that merely contains `snapshots`.
+        assert_eq!(
+            model_id_from_path("/data/snapshots/2026-10-20"),
+            "2026-10-20"
+        );
+        assert_eq!(
+            model_id_from_path("/cache/datasets--org--name/snapshots/abc"),
+            "abc"
+        );
+        assert_eq!(
+            model_id_from_path("/models/models--org--name/other/abc"),
+            "abc"
+        );
+        assert_eq!(
+            model_id_from_path("/cache/models--org--name/snapshots"),
+            "snapshots"
+        );
+    }
 }
