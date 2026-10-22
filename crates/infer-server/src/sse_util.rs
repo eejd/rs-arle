@@ -375,9 +375,9 @@ mod tests {
         }]
     }
 
-    // A Qwen3.5 tool call as the model writes it (the quantbench `scalars`
-    // case): the template renders non-container scalars with Jinja's `string`
-    // filter, so the boolean is `True`.
+    // A Qwen3.5 tool call as the model writes it: the template renders
+    // non-container scalars with Jinja's `string` filter, so the boolean is
+    // `True`.
     const QWEN_CALL: &str = "<tool_call>\n<function=echo_args>\n<parameter=text>\nhand summer\n</parameter>\n<parameter=count>\n17\n</parameter>\n<parameter=flag>\nTrue\n</parameter>\n<parameter=zip>\n12345\n</parameter>\n<parameter=note>\nnull\n</parameter>\n<parameter=extra>\n5\n</parameter>\n</function>\n</tool_call>";
 
     fn stream_calls(schemas: chat::ToolSchemas, chunk: usize) -> Vec<chat::ToolCall> {

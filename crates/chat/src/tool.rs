@@ -861,8 +861,8 @@ mod tests {
 
     #[test]
     fn declared_parameters_are_typed_by_the_schema() {
-        // The Qwen3.5 text of the quantbench `scalars` case (`True`), and
-        // string parameters whose text looks like a number, `null`, a boolean.
+        // A Qwen3.5 tool call as the model writes it (`True`), and string
+        // parameters whose text looks like a number, `null`, a boolean.
         let text = call(
             "echo_args",
             &[
