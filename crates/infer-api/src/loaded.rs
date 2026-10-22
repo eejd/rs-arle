@@ -270,6 +270,17 @@ impl Default for EngineLoadConfig {
 }
 
 impl EngineLoadConfig {
+    /// The id the HTTP surface serves the model under: `--served-model-name`
+    /// when given (and not blank), else `derived` (the id taken from the model
+    /// path).
+    pub(crate) fn served_model_id(&self, derived: String) -> String {
+        self.served_model_name
+            .as_deref()
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+            .map_or(derived, str::to_owned)
+    }
+
     // A set `--max-running-requests` IS the executor slot budget: the scheduler
     // runs at most `cap` requests, and post-#154-3b DSv4 slots TRADE against
     // shared comp-pool tokens (each ~338MB), so provisioning `num_slots` slots
@@ -784,7 +795,7 @@ pub(crate) fn router_for_backend(
     })?;
     check_load_capabilities(&backend, caps, &config)?;
     let (serve, tokenizer, model_id) = build(model_path, &config, shutdown)?;
-    let model_id = config.served_model_name.clone().unwrap_or(model_id);
+    let model_id = config.served_model_id(model_id);
     let serve_engine = ServeInferenceEngine::new(model_id.clone(), tokenizer.clone(), serve);
     let serve_arc = serve_engine.serve_arc();
     // VLM models (DeepSeek-OCR) need the multimodal kind to wire the HTTP
@@ -1596,5 +1607,40 @@ mod capability_tests {
             !err.contains("CUDA backend"),
             "error must not hard-code another backend name: {err}"
         );
+    }
+}
+
+#[cfg(test)]
+mod served_model_id_tests {
+    use super::EngineLoadConfig;
+
+    fn config(name: Option<&str>) -> EngineLoadConfig {
+        EngineLoadConfig {
+            served_model_name: name.map(str::to_owned),
+            ..EngineLoadConfig::default()
+        }
+    }
+
+    #[test]
+    fn the_served_name_wins_over_the_id_derived_from_the_path() {
+        assert_eq!(
+            config(Some("qwen")).served_model_id("Qwen3-4B".into()),
+            "qwen"
+        );
+        assert_eq!(
+            config(Some(" qwen ")).served_model_id("Qwen3-4B".into()),
+            "qwen"
+        );
+    }
+
+    #[test]
+    fn without_a_usable_name_the_derived_id_is_kept() {
+        for name in [None, Some(""), Some("   ")] {
+            assert_eq!(
+                config(name).served_model_id("Qwen3-4B".into()),
+                "Qwen3-4B",
+                "{name:?}"
+            );
+        }
     }
 }

@@ -660,7 +660,7 @@ mod model_id_tests {
 
     #[test]
     fn a_hub_cache_snapshot_is_named_by_its_repo_not_its_revision() {
-        let rev = "0e7ffd5c629ef7719d4cbc04069232580bfa9d9c";
+        let rev = "0123456789abcdef0123456789abcdef01234567";
         let repo = "/cache/hub/models--mlx-community--Qwen3.5-4B-4bit";
         assert_eq!(
             model_id_from_path(&format!("{repo}/snapshots/{rev}")),

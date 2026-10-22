@@ -118,6 +118,7 @@ infer-metal = { path = "crates/infer-metal", default-features = false, optional 
 infer-api = { path = "crates/infer-api" }
 infer-util = { path = "crates/infer-util" }
 serde_json = { workspace = true }
+tempfile = "3"
 
 [[bin]]
 name = "arle"

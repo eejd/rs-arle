@@ -130,6 +130,7 @@ dependencies = [
  "infer-util",
  "log",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]
