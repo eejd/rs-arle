@@ -148,6 +148,7 @@ fn run_config(config: ServeConfig) -> ExitCode {
                     &config.options.bind,
                     config.options.port,
                     config.options.engine_config.max_thinking_tokens,
+                    config.options.engine_config.served_model_name.as_deref(),
                     relays,
                 );
                 // Keep the worker children alive until the serve loop returns.
@@ -486,6 +487,7 @@ fn resolve_engine_config(
         config.max_total_tokens = value;
     }
     config.max_thinking_tokens = serve_args.max_thinking_tokens;
+    config.served_model_name = serve_args.served_model_name.clone();
     config.mem_fraction_static = serve_args.mem_fraction_static;
     config.kv_dram = serve_args.kv_dram;
     if let Some(value) = serve_args.chunked_prefill_size {
@@ -520,4 +522,46 @@ fn resolve_engine_config(
     }
 
     Ok(config)
+}
+
+#[cfg(test)]
+mod tests {
+    use clap::Parser;
+
+    use super::resolve_engine_config;
+    use crate::args::{Args, CliCommand, ServeArgs};
+
+    fn serve_args(extra: &[&str]) -> Result<ServeArgs, clap::Error> {
+        let mut argv = vec!["arle", "serve", "--model-path", "/models/Qwen3-4B"];
+        argv.extend_from_slice(extra);
+        match Args::try_parse_from(argv)?.command {
+            Some(CliCommand::Serve(args)) => Ok(*args),
+            _ => panic!("`arle serve` did not parse as the serve command"),
+        }
+    }
+
+    #[test]
+    fn served_model_name_reaches_the_engine_config_trimmed() {
+        let args = serve_args(&["--served-model-name", "  qwen3.5-4b  "]).expect("parses");
+        let config = resolve_engine_config("cpu", &args).expect("resolves");
+        assert_eq!(config.served_model_name.as_deref(), Some("qwen3.5-4b"));
+    }
+
+    #[test]
+    fn served_model_name_is_unset_by_default() {
+        let args = serve_args(&[]).expect("parses");
+        let config = resolve_engine_config("cpu", &args).expect("resolves");
+        assert_eq!(config.served_model_name, None);
+    }
+
+    #[test]
+    fn a_blank_served_model_name_is_refused() {
+        for blank in ["", "   "] {
+            let err = serve_args(&["--served-model-name", blank]).expect_err("blank name refused");
+            assert!(
+                err.to_string().contains("model name must not be empty"),
+                "{blank:?}: {err}"
+            );
+        }
+    }
 }
