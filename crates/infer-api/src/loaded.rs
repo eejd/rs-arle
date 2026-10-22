@@ -182,6 +182,11 @@ pub struct EngineLoadConfig {
     /// dispatches by name at load time.
     #[serde(default)]
     pub backend: Option<String>,
+    /// `--served-model-name`: the id `GET /v1/models` lists and responses carry
+    /// as `model`. `None` = derived from the model path
+    /// ([`crate::model_id_from_path`]).
+    #[serde(default)]
+    pub served_model_name: Option<String>,
 }
 
 fn default_dspark_sps_bias_ms() -> f32 {
@@ -259,6 +264,7 @@ impl Default for EngineLoadConfig {
             world_size: None,
             context_parallel_size: None,
             backend: None,
+            served_model_name: None,
         }
     }
 }
@@ -778,6 +784,7 @@ pub(crate) fn router_for_backend(
     })?;
     check_load_capabilities(&backend, caps, &config)?;
     let (serve, tokenizer, model_id) = build(model_path, &config, shutdown)?;
+    let model_id = config.served_model_name.clone().unwrap_or(model_id);
     let serve_engine = ServeInferenceEngine::new(model_id.clone(), tokenizer.clone(), serve);
     let serve_arc = serve_engine.serve_arc();
     // VLM models (DeepSeek-OCR) need the multimodal kind to wire the HTTP

@@ -2,6 +2,14 @@ use std::path::PathBuf;
 
 use clap::{ArgGroup, Args as ClapArgs, Parser, Subcommand, ValueEnum};
 
+fn parse_served_model_name(value: &str) -> Result<String, String> {
+    let name = value.trim();
+    if name.is_empty() {
+        return Err("model name must not be empty".to_string());
+    }
+    Ok(name.to_string())
+}
+
 fn parse_positive_usize(value: &str) -> Result<usize, String> {
     let parsed = value
         .parse::<usize>()
@@ -451,6 +459,13 @@ pub(crate) struct ServeArgs {
     /// Serving backend to launch; `auto` selects the compiled backend.
     #[arg(long, value_enum, default_value_t = ServeBackendArg::Auto)]
     pub(crate) backend: ServeBackendArg,
+
+    /// Model id that `GET /v1/models` lists and that responses carry in
+    /// `model` (the name SGLang and vLLM give this flag). Default: the final
+    /// segment of --model-path, or the repo name for a Hugging Face cache
+    /// snapshot. A request's own `model` field is not matched against it.
+    #[arg(long, value_name = "NAME", value_parser = parse_served_model_name)]
+    pub(crate) served_model_name: Option<String>,
 
     /// Port to listen on.
     #[arg(long, default_value_t = 8000)]
